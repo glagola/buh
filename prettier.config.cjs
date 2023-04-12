@@ -1,6 +1,10 @@
 /** @type {import("prettier").Config} */
 const config = {
-    plugins: [require.resolve('prettier-plugin-tailwindcss')],
+    pluginSearchDirs: ['./node_modules'],
+    plugins: [
+        'prettier-plugin-tailwindcss',
+        '@trivago/prettier-plugin-sort-imports',
+    ],
     tabWidth: 4,
     useTabs: false,
     semi: true,
@@ -12,6 +16,9 @@ const config = {
     bracketSameLine: false,
     arrowParens: 'always',
     singleAttributePerLine: true,
+
+    importOrder: ['<THIRD_PARTY_MODULES>', '^@/(.*)$', '^[./]'],
+    importOrderSeparation: true,
 };
 
 module.exports = config;
