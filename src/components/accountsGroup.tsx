@@ -107,6 +107,9 @@ const AccountsGroup: FC<TProps> = (props) => {
                                                 key={account.title + account.currency.isoCode}
                                                 className='flex items-center'
                                             >
+                                                {
+                                                    // TODO format archivedAt date time
+                                                }
                                                 {account.title}, {account.currency.isoCode} - {archivedAt.toString()}
                                                 <PlusCircleIcon
                                                     className={iconSize}
