@@ -1,14 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import type {
-    TBuh,
-    TAccountHistoryState,
-    TAccount,
-    TCurrency,
-    THistoryItem,
-    TArchivedAccount,
-} from '@/entites';
+import type { TBuh, TAccountHistoryState, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
 import { type TRootState } from '@/store';
 
 const currentDate = new Date();
@@ -67,11 +60,7 @@ const initialState: TBuh = {
             createdAt: pastDate1,
         },
         {
-            accounts: [
-                sampleAccountHistoryState1,
-                sampleAccountHistoryState2,
-                sampleAccountHistoryState3,
-            ],
+            accounts: [sampleAccountHistoryState1, sampleAccountHistoryState2, sampleAccountHistoryState3],
             createdAt: pastDate3,
         },
     ],
@@ -83,10 +72,7 @@ const slice = createSlice({
     name,
     initialState,
     reducers: {
-        storeHistoryItem: (
-            state,
-            action: PayloadAction<TAccountHistoryState[]>,
-        ) => {
+        storeHistoryItem: (state, action: PayloadAction<TAccountHistoryState[]>) => {
             state.history.push({
                 accounts: action.payload,
 
@@ -122,24 +108,16 @@ const chronology = (_state: TRootState): THistoryItem[] => {
 const recentlyUsedAccounts = (_state: TRootState): TAccount[] => {
     const history = chronology(_state);
 
-    return (history[0]?.accounts ?? []).map(
-        (accountState) => accountState.account,
-    );
+    return (history[0]?.accounts ?? []).map((accountState) => accountState.account);
 };
 
-const sortMapValues = <K, V>(
-    map: Map<K, V[]>,
-    comparator: (a: V, b: V) => number,
-): void => {
+const sortMapValues = <K, V>(map: Map<K, V[]>, comparator: (a: V, b: V) => number): void => {
     for (const value of map.values()) {
         value.sort(comparator);
     }
 };
 
-const groupByCurrency = <T>(
-    items: T[],
-    getCurrency: (item: T) => TCurrency,
-): Map<TCurrency, T[]> =>
+const groupByCurrency = <T>(items: T[], getCurrency: (item: T) => TCurrency): Map<TCurrency, T[]> =>
     items.reduce((res, item) => {
         const currency = getCurrency(item);
         const items = res.get(currency) ?? [];
@@ -147,15 +125,10 @@ const groupByCurrency = <T>(
         return res.set(currency, items);
     }, new Map<TCurrency, T[]>());
 
-export const recentlyUsedAccountsGroupByCurrency = (
-    _state: TRootState,
-): Map<TCurrency, TAccount[]> => {
+export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCurrency, TAccount[]> => {
     const recentlyAccounts = recentlyUsedAccounts(_state);
 
-    const res = groupByCurrency(
-        recentlyAccounts,
-        (account: TAccount) => account.currency,
-    );
+    const res = groupByCurrency(recentlyAccounts, (account: TAccount) => account.currency);
 
     sortMapValues(res, (a, b) => {
         if (a.title === b.title) return 0;
@@ -185,16 +158,8 @@ export const archivedAccountsGroupByCurrencyAndSortByUsage = (
         }
     }
 
-    const recentlyAccounts = new Set(
-        recentlyUsedAccounts(_state).map((account) => account.id),
-    );
-
-    const archivedAccountsExcludeRecent = [...archivedAccounts.values()].filter(
-        (archivedAccount) => !recentlyAccounts.has(archivedAccount.account.id),
-    );
-
     const res = groupByCurrency(
-        archivedAccountsExcludeRecent,
+        [...archivedAccounts.values()],
         (account: TArchivedAccount) => account.account.currency,
     );
 

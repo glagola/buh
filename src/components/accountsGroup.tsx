@@ -1,4 +1,4 @@
-import { ArchiveBoxIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArchiveBoxIcon, PencilIcon, XMarkIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { type FC } from 'react';
 import { Field } from 'react-final-form';
@@ -27,31 +27,31 @@ const AccountsGroup: FC<TProps> = (props) => {
     const archivedAccounts = archivedAccontsByCurrency.get(props.currency) ?? [];
 
     return (
-        <div className='mb-10 last:mb-0'>
-            <div className='font- flex justify-between'>
-                <h2>{props.title}</h2>
-                {isArchiving ? (
-                    <XMarkIcon
-                        className={iconSize}
-                        onClick={toggleArchive}
-                    />
-                ) : (
-                    <PencilIcon
-                        className={iconSize}
-                        onClick={toggleArchive}
-                    />
-                )}
-            </div>
+        <FieldArray<TAccountState> name={`accounts.${props.currency.isoCode}`}>
+            {({ fields }) => (
+                <div className='mb-10 last:mb-0'>
+                    <div className='font- flex justify-between'>
+                        <h2>{props.title}</h2>
+                        {isArchiving ? (
+                            <XMarkIcon
+                                className={iconSize}
+                                onClick={toggleArchive}
+                            />
+                        ) : (
+                            <PencilIcon
+                                className={iconSize}
+                                onClick={toggleArchive}
+                            />
+                        )}
+                    </div>
 
-            <div
-                className={clsx('grid grid-cols-[max-content_1fr_min-content] items-center gap-4', {
-                    'grid-cols-[max-content_1fr_min-content]': isArchiving,
-                    'grid-cols-[max-content_1fr]': !isArchiving,
-                })}
-            >
-                <FieldArray<TAccountState> name={`accounts.${props.currency.isoCode}`}>
-                    {({ fields }) => {
-                        return fields.map((name, index) => (
+                    <div
+                        className={clsx('grid items-center gap-4', {
+                            'grid-cols-[max-content_1fr_min-content]': isArchiving,
+                            'grid-cols-[max-content_1fr]': !isArchiving,
+                        })}
+                    >
+                        {fields.map((name, index) => (
                             <Field<TAccountState>
                                 key={name}
                                 name={name}
@@ -77,29 +77,55 @@ const AccountsGroup: FC<TProps> = (props) => {
                                                     } as TAccountState)
                                                 }
                                             />
-                                            {isArchiving && <ArchiveBoxIcon className={iconSize} />}
+                                            {isArchiving && (
+                                                <ArchiveBoxIcon
+                                                    className={iconSize}
+                                                    onClick={() => fields.remove(index)}
+                                                />
+                                            )}
                                         </>
                                     );
                                 }}
                             </Field>
-                        ));
-                    }}
-                </FieldArray>
-            </div>
-
-            {isArchiving && archivedAccounts.length && (
-                <>
-                    <hr />
-                    <ul>
-                        {archivedAccounts.map((account) => (
-                            <li key={account.account.title + props.currency.isoCode}>
-                                {account.account.title}, {props.currency.isoCode} - {account.archivedAt.toString()}
-                            </li>
                         ))}
-                    </ul>
-                </>
+                    </div>
+                    {isArchiving &&
+                        (() => {
+                            const currentAccounts = new Set((fields.value ?? []).map(({ account }) => account.id));
+                            const leftInArchive = archivedAccounts.filter(
+                                ({ account }) => !currentAccounts.has(account.id),
+                            );
+
+                            if (!leftInArchive.length) return;
+
+                            return (
+                                <>
+                                    <hr />
+                                    <ul>
+                                        {leftInArchive.map(({ account, archivedAt }) => (
+                                            <li
+                                                key={account.title + account.currency.isoCode}
+                                                className='flex items-center'
+                                            >
+                                                {account.title}, {account.currency.isoCode} - {archivedAt.toString()}
+                                                <PlusCircleIcon
+                                                    className={iconSize}
+                                                    onClick={() => {
+                                                        fields.push({
+                                                            account,
+                                                            formula: '',
+                                                        });
+                                                    }}
+                                                />
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            );
+                        })()}
+                </div>
             )}
-        </div>
+        </FieldArray>
     );
 };
 

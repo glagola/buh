@@ -35,6 +35,7 @@ const MoneyInput: FC<TProps> = (props) => {
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 onChange={(e) => props.onChange(e.target.value.replace(',', '.').replace(/[^0-9. +-\/*]/m, ''))}
+                data-lpignore='true'
             />
         </>
     );
