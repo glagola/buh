@@ -1,35 +1,27 @@
 import { evaluate } from 'mathjs';
-import { type FC, useMemo, useState } from 'react';
+import { type FC, useState } from 'react';
 
-import { type TCurrency } from '@/entites';
+import { safeEvaluate } from '@/utils/expression';
 
 import { clsxm } from './utils/classNames';
 
 type TProps = {
     title: string;
-    currency: TCurrency;
     value: string;
+    error?: string;
+    onChange: (event: React.ChangeEvent<HTMLElement> | string) => void;
 };
 
 const MoneyInput: FC<TProps> = (props) => {
     const [focused, setFocused] = useState(false);
-    const [formula, setFormula] = useState(props.value);
+    const isError = !!props.error;
 
-    const [value, isError] = useMemo(() => {
-        try {
-            const res = evaluate(formula) as number | undefined;
-            const exprValue = undefined === res ? '' : res.toFixed(2);
-            return [focused ? formula : exprValue, '' === exprValue];
-        } catch (error) {
-            return [formula, true];
-        }
-    }, [focused, formula]);
+    const evalResult = safeEvaluate(props.value);
+    const value = focused || isError ? props.value : undefined === evalResult ? '' : evalResult.toFixed(2);
 
     return (
         <>
-            <div>
-                {props.title}, {props.currency.isoCode}
-            </div>
+            <div>{props.title}</div>
             <input
                 type='text'
                 className={clsxm(
@@ -41,13 +33,7 @@ const MoneyInput: FC<TProps> = (props) => {
                 value={value}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
-                onChange={(e) =>
-                    setFormula(
-                        e.target.value
-                            .replace(',', '.')
-                            .replace(/[^0-9. +-\/*]/m, ''),
-                    )
-                }
+                onChange={(e) => props.onChange(e.target.value.replace(',', '.').replace(/[^0-9. +-\/*]/m, ''))}
             />
         </>
     );

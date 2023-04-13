@@ -193,7 +193,6 @@ export const archivedAccountsGroupByCurrencyAndSortByUsage = (
         (archivedAccount) => !recentlyAccounts.has(archivedAccount.account.id),
     );
 
-    // TODO rename!!!
     const res = groupByCurrency(
         archivedAccountsExcludeRecent,
         (account: TArchivedAccount) => account.account.currency,
