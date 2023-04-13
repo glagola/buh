@@ -17,6 +17,8 @@ const MoneyInput: FC<TProps> = (props) => {
     const isError = !!props.error;
 
     const evalResult = safeEvaluate(props.value);
+
+    // TODO: format money properly with spaces
     const value = focused || isError ? props.value : undefined === evalResult ? '' : evalResult.toFixed(2);
 
     return (
