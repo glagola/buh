@@ -1,4 +1,3 @@
-import { evaluate } from 'mathjs';
 import { type FC, useState } from 'react';
 
 import { safeEvaluate } from '@/utils/expression';
