@@ -57,7 +57,7 @@ const TestPage: NextPage = () => {
                             {Object.entries(values.accounts ?? {}).map(([isoCode, accounts]) => (
                                 <AccountsGroup
                                     key={isoCode}
-                                    formFieldName={`accounts.${isoCode}`}
+                                    fieldName={`accounts.${isoCode}`}
                                     title={`Accounts in ${isoCode}`}
                                     accounts={accounts}
                                     archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}

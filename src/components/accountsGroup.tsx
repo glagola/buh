@@ -12,7 +12,7 @@ import MoneyInput from './moneyInput';
 
 type TProps = {
     title: string;
-    formFieldName: string;
+    fieldName: string;
     accounts: TAccountState[];
     archivedAccounts: TArchivedAccount[];
 };
@@ -23,7 +23,7 @@ const AccountsGroup: FC<TProps> = (props) => {
     const [isArchiving, toggleArchive] = useToggle(false);
 
     return (
-        <FieldArray<TAccountState> name={props.formFieldName}>
+        <FieldArray<TAccountState> name={props.fieldName}>
             {({ fields }) => (
                 <div className='mb-10 last:mb-0'>
                     <div className='font- flex justify-between'>
