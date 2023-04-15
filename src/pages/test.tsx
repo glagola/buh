@@ -10,9 +10,7 @@ import AccountsGroup from '@/components/accountsGroup';
 import type { TAccountState, TCurrency } from '@/entites';
 import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
 
-type TAccountStateByCurrency = {
-    [key: string]: TAccountState[];
-};
+type TAccountStateByCurrency = Record<TCurrency['isoCode'], TAccountState[]>;
 
 const TestPage: NextPage = () => {
     const recent = useSelector(recentlyUsedAccountsGroupByCurrency);
@@ -45,7 +43,7 @@ const TestPage: NextPage = () => {
     };
 
     return (
-        <Form<{ accounts: Record<TCurrency['isoCode'], TAccountState[]> }>
+        <Form<{ accounts: TAccountStateByCurrency | undefined }>
             onSubmit={handleSubmit}
             mutators={mutators}
             initialValues={initialValues}
