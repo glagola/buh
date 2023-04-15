@@ -1,5 +1,3 @@
-'use client';
-
 import arrayMutators from 'final-form-arrays';
 import { type NextPage } from 'next';
 import { useMemo, useState } from 'react';
