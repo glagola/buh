@@ -3,19 +3,18 @@ import clsx from 'clsx';
 import { type FC } from 'react';
 import { Field } from 'react-final-form';
 import { FieldArray } from 'react-final-form-arrays';
-import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
-import type { TCurrency, TAccountState } from '@/entites';
-import { archivedAccountsGroupByCurrencyAndSortByUsage } from '@/store/history';
+import type { TCurrency, TAccountState, TArchivedAccount } from '@/entites';
 import { isFormulaValid } from '@/validators';
 
 import MoneyInput from './moneyInput';
 
 type TProps = {
     title: string;
-    currency: TCurrency;
+    currencyIsoCode: TCurrency['isoCode'];
     accounts: TAccountState[];
+    archivedAccounts: TArchivedAccount[];
 };
 
 const iconSize = 'w-4 h-4 hover:cursor-pointer hover:text-blue-600';
@@ -23,11 +22,8 @@ const iconSize = 'w-4 h-4 hover:cursor-pointer hover:text-blue-600';
 const AccountsGroup: FC<TProps> = (props) => {
     const [isArchiving, toggleArchive] = useToggle(false);
 
-    const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
-    const archivedAccounts = archivedAccontsByCurrency.get(props.currency) ?? [];
-
     return (
-        <FieldArray<TAccountState> name={`accounts.${props.currency.isoCode}`}>
+        <FieldArray<TAccountState> name={`accounts.${props.currencyIsoCode}`}>
             {({ fields }) => (
                 <div className='mb-10 last:mb-0'>
                     <div className='font- flex justify-between'>
@@ -92,7 +88,7 @@ const AccountsGroup: FC<TProps> = (props) => {
                     {isArchiving &&
                         (() => {
                             const currentAccounts = new Set((fields.value ?? []).map(({ account }) => account.id));
-                            const leftInArchive = archivedAccounts.filter(
+                            const leftInArchive = props.archivedAccounts.filter(
                                 ({ account }) => !currentAccounts.has(account.id),
                             );
 

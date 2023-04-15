@@ -117,13 +117,13 @@ const sortMapValues = <K, V>(map: Map<K, V[]>, comparator: (a: V, b: V) => numbe
     }
 };
 
-const groupByCurrency = <T>(items: T[], getCurrency: (item: T) => TCurrency): Map<TCurrency, T[]> =>
+const groupByCurrency = <T, U>(items: T[], getCurrency: (item: T) => U): Map<U, T[]> =>
     items.reduce((res, item) => {
         const currency = getCurrency(item);
         const items = res.get(currency) ?? [];
         items.push(item);
         return res.set(currency, items);
-    }, new Map<TCurrency, T[]>());
+    }, new Map<U, T[]>());
 
 export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCurrency, TAccount[]> => {
     const recentlyAccounts = recentlyUsedAccounts(_state);
@@ -139,9 +139,7 @@ export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCu
     return res;
 };
 
-export const archivedAccountsGroupByCurrencyAndSortByUsage = (
-    _state: TRootState,
-): Map<TCurrency, TArchivedAccount[]> => {
+export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState): Map<string, TArchivedAccount[]> => {
     const history = chronology(_state);
     const archivedAccounts = new Map<string, TArchivedAccount>();
 
@@ -160,7 +158,7 @@ export const archivedAccountsGroupByCurrencyAndSortByUsage = (
 
     const res = groupByCurrency(
         [...archivedAccounts.values()],
-        (account: TArchivedAccount) => account.account.currency,
+        (account: TArchivedAccount) => account.account.currency.isoCode,
     );
 
     sortMapValues(

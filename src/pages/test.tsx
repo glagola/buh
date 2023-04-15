@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 
 import AccountsGroup from '@/components/accountsGroup';
 import type { TAccountState, TCurrency } from '@/entites';
-import { recentlyUsedAccountsGroupByCurrency } from '@/store/history';
+import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
 
 type TAccountStateByCurrency = {
     [key: string]: TAccountState[];
@@ -16,6 +16,7 @@ type TAccountStateByCurrency = {
 
 const TestPage: NextPage = () => {
     const recent = useSelector(recentlyUsedAccountsGroupByCurrency);
+    const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
 
     const [current] = useState(() =>
         [...recent.entries()].map(([currency, accounts]): [TCurrency, TAccountState[]] => [
@@ -44,24 +45,28 @@ const TestPage: NextPage = () => {
     };
 
     return (
-        <Form
+        <Form<{ accounts: Record<TCurrency['isoCode'], TAccountState[]> }>
             onSubmit={handleSubmit}
             mutators={mutators}
             initialValues={initialValues}
-            render={({ handleSubmit }) => (
-                <form onSubmit={(...args) => void handleSubmit(...args)}>
-                    <div className='container mx-auto my-20'>
-                        {current.map(([currency, accounts]) => (
-                            <AccountsGroup
-                                key={currency.isoCode}
-                                title={`Accounts in ${currency.isoCode}`}
-                                currency={currency}
-                                accounts={accounts}
-                            />
-                        ))}
-                    </div>
-                </form>
-            )}
+            render={({ handleSubmit, values }) => {
+                console.log(values);
+                return (
+                    <form onSubmit={(...args) => void handleSubmit(...args)}>
+                        <div className='container mx-auto my-20'>
+                            {Object.entries(values.accounts ?? {}).map(([isoCode, accounts]) => (
+                                <AccountsGroup
+                                    key={isoCode}
+                                    currencyIsoCode={isoCode}
+                                    title={`Accounts in ${isoCode}`}
+                                    accounts={accounts}
+                                    archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
+                                />
+                            ))}
+                        </div>
+                    </form>
+                );
+            }}
         />
     );
 };
