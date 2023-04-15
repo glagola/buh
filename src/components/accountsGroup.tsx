@@ -5,7 +5,7 @@ import { Field } from 'react-final-form';
 import { FieldArray } from 'react-final-form-arrays';
 import { useToggle } from 'react-use';
 
-import type { TCurrency, TAccountState, TArchivedAccount } from '@/entites';
+import type { TAccountState, TArchivedAccount } from '@/entites';
 import { isFormulaValid } from '@/validators';
 
 import MoneyInput from './moneyInput';
@@ -13,7 +13,6 @@ import MoneyInput from './moneyInput';
 type TProps = {
     title: string;
     fieldName: string;
-    accounts: TAccountState[];
     archivedAccounts: TArchivedAccount[];
 };
 

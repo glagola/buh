@@ -48,12 +48,11 @@ const TestPage: NextPage = () => {
             render={({ handleSubmit, values }) => (
                 <form onSubmit={(...args) => void handleSubmit(...args)}>
                     <div className='container mx-auto my-20'>
-                        {Object.entries(values.accounts ?? {}).map(([isoCode, accounts]) => (
+                        {Object.entries(values.accounts ?? {}).map(([isoCode]) => (
                             <AccountsGroup
                                 key={isoCode}
                                 fieldName={`accounts.${isoCode}`}
                                 title={`Accounts in ${isoCode}`}
-                                accounts={accounts}
                                 archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
                             />
                         ))}
