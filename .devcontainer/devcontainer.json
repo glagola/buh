@@ -9,7 +9,8 @@
 			"extensions": [
 				"bradlc.vscode-tailwindcss",
 				"esbenp.prettier-vscode",
-				"Gruntfuggly.todo-tree"
+				"Gruntfuggly.todo-tree",
+				"yoavbls.pretty-ts-errors"
 			]
 		}
 	}

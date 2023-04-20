@@ -117,18 +117,18 @@ const sortMapValues = <K, V>(map: Map<K, V[]>, comparator: (a: V, b: V) => numbe
     }
 };
 
-const groupByCurrency = <T, U>(items: T[], getCurrency: (item: T) => U): Map<U, T[]> =>
+const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
     items.reduce((res, item) => {
-        const currency = getCurrency(item);
-        const items = res.get(currency) ?? [];
+        const key = getKey(item);
+        const items = res.get(key) ?? [];
         items.push(item);
-        return res.set(currency, items);
+        return res.set(key, items);
     }, new Map<U, T[]>());
 
 export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCurrency, TAccount[]> => {
     const recentlyAccounts = recentlyUsedAccounts(_state);
 
-    const res = groupByCurrency(recentlyAccounts, (account: TAccount) => account.currency);
+    const res = groupBy(recentlyAccounts, (account: TAccount) => account.currency);
 
     sortMapValues(res, (a, b) => {
         if (a.title === b.title) return 0;
@@ -137,6 +137,19 @@ export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCu
     });
 
     return res;
+};
+
+export const currencies = (_state: TRootState): TCurrency[] => {
+    const state = _state.buh;
+    const currenciesByIsoCode = new Map<TCurrency['isoCode'], TCurrency>();
+
+    for (const item of state.history) {
+        for (const accountState of item.accounts) {
+            currenciesByIsoCode.set(accountState.account.currency.isoCode, accountState.account.currency);
+        }
+    }
+
+    return [...currenciesByIsoCode.values()];
 };
 
 export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState): Map<string, TArchivedAccount[]> => {
@@ -156,7 +169,7 @@ export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState
         }
     }
 
-    const res = groupByCurrency(
+    const res = groupBy(
         [...archivedAccounts.values()],
         (account: TArchivedAccount) => account.account.currency.isoCode,
     );
