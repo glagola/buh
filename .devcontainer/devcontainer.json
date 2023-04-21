@@ -10,7 +10,8 @@
 				"bradlc.vscode-tailwindcss",
 				"esbenp.prettier-vscode",
 				"Gruntfuggly.todo-tree",
-				"yoavbls.pretty-ts-errors"
+				"yoavbls.pretty-ts-errors",
+				"styled-components.vscode-styled-components"
 			]
 		}
 	}
