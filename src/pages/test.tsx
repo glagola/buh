@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import AccountsGroup from '@/components/accountsGroup';
-import AddAccountModal from '@/components/addAccount';
+import AddAccountModal from '@/components/addAccountModal';
 import type { TAccountState, TCurrency } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
