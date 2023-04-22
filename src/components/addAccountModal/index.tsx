@@ -23,9 +23,9 @@ const schema = z.object({
 
 const style = {
     position: 'absolute',
-    top: '50%',
+    top: '100px',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
+    transform: 'translate(-50%, 0)',
     width: 400,
     bgcolor: 'background.paper',
     border: '2px solid #000',
@@ -40,6 +40,7 @@ type TProps = {
     currencies: TCurrency[];
     accounts: TAccount[];
     onCancel: () => void;
+    onSuccess: (rawAccount: TRawAccountDetails) => void;
 };
 
 const AddAccountModal: FC<TProps> = (props) => {
@@ -47,9 +48,7 @@ const AddAccountModal: FC<TProps> = (props) => {
         mode: 'onBlur',
         resolver: zodResolver(schema),
     });
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
-    });
+    const onSubmit = handleSubmit(props.onSuccess);
 
     return (
         <Modal
@@ -61,7 +60,8 @@ const AddAccountModal: FC<TProps> = (props) => {
                     component='h2'
                     variant='h5'
                     sx={{
-                        borderBottom: '1px solid ' + grey[300],
+                        borderBottom: '1px solid',
+                        borderBottomColor: grey[300],
                         pb: 1,
                         mb: 3,
                     }}
@@ -104,11 +104,10 @@ const AddAccountModal: FC<TProps> = (props) => {
                         )}
                     />
 
-                    <Box sx={{ textAlign: 'right' }}>
+                    <S.Buttons>
                         <Button
                             variant='text'
                             onClick={props.onCancel}
-                            sx={{ mr: 3 }}
                         >
                             Cancel
                         </Button>
@@ -118,7 +117,7 @@ const AddAccountModal: FC<TProps> = (props) => {
                         >
                             Add
                         </Button>
-                    </Box>
+                    </S.Buttons>
                 </S.Form>
             </Box>
         </Modal>

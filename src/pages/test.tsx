@@ -8,7 +8,7 @@ import { useToggle } from 'react-use';
 
 import AccountsGroup from '@/components/accountsGroup';
 import AddAccountModal from '@/components/addAccountModal';
-import type { TAccountState, TCurrency } from '@/entites';
+import type { TAccountState, TCurrency, TRawAccountDetails } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
     currencies,
@@ -55,7 +55,7 @@ const TestPage: NextPage = () => {
             onSubmit={handleSubmit}
             mutators={mutators}
             initialValues={initialValues}
-            render={({ handleSubmit, values }) => (
+            render={({ handleSubmit, values, form }) => (
                 <>
                     <Button
                         variant='contained'
@@ -80,6 +80,24 @@ const TestPage: NextPage = () => {
                         accounts={usedAccounts}
                         open={showModal}
                         onCancel={toggleModal}
+                        onSuccess={(rawAccount: TRawAccountDetails) => {
+                            toggleModal();
+                            const accountState: TAccountState = {
+                                account: {
+                                    ...rawAccount,
+                                    id: rawAccount.title,
+                                    createdAt: new Date(),
+                                },
+
+                                formula: '',
+                            };
+                            const currencyIsoCode = rawAccount.currency.isoCode;
+
+                            form.change('accounts', {
+                                ...(values.accounts ?? {}),
+                                [currencyIsoCode]: [...(values.accounts?.[currencyIsoCode] ?? []), accountState],
+                            });
+                        }}
                     />
                 </>
             )}
