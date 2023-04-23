@@ -4,7 +4,7 @@ import { type FC } from 'react';
 import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook-form-mui';
 import { z } from 'zod';
 
-import type { TRawAccountDetails, TAccount, TCurrency } from '@/entites';
+import type { TRawAccountDetails, TCurrency } from '@/entites';
 
 const resolver = zodResolver(
     z.object({

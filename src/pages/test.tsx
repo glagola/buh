@@ -22,7 +22,6 @@ const TestPage: NextPage = () => {
     const recent = useSelector(recentlyUsedAccountsGroupByCurrency);
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
     const usedCurencies = useSelector(currencies);
-    const usedAccounts = [...archivedAccontsByCurrency.values()].flat().map(({ account }) => account);
 
     const [current] = useState(() =>
         [...recent.entries()].map(([currency, accounts]): [TCurrency, TAccountState[]] => [
