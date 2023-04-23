@@ -40,6 +40,9 @@ const AddAccountModal: FC<TProps> = (props) => (
         <DialogTitle
             component='h2'
             variant='h5'
+            sx={{
+                borderWidth: 1,
+            }}
         >
             Add account
         </DialogTitle>
@@ -69,7 +72,7 @@ const AddAccountModal: FC<TProps> = (props) => (
                     />
                 </Stack>
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ gap: 3, p: 3, pt: 0 }}>
                 <Button
                     variant='text'
                     onClick={props.onCancel}
