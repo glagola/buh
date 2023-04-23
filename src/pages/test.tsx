@@ -77,7 +77,6 @@ const TestPage: NextPage = () => {
                     </form>
                     <AddAccountModal
                         currencies={usedCurencies}
-                        accounts={usedAccounts}
                         open={showModal}
                         onCancel={toggleModal}
                         onSuccess={(rawAccount: TRawAccountDetails) => {

@@ -25,7 +25,6 @@ const getCurrencyLabel = (currency: TCurrency) => currency.isoCode;
 type TProps = {
     open: boolean;
     currencies: TCurrency[];
-    accounts: TAccount[];
     onCancel: () => void;
     onSuccess: (rawAccount: TRawAccountDetails) => void;
 };
