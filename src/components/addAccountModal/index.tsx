@@ -1,13 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Autocomplete, Box, Button, Modal, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Modal, Stack, TextField, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { type FC } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import type { TRawAccountDetails, TAccount, TCurrency } from '@/entites';
-
-import * as S from './_styles';
 
 const schema = z.object({
     title: z.string().min(3),
@@ -68,7 +66,12 @@ const AddAccountModal: FC<TProps> = (props) => {
                 >
                     Add account
                 </Typography>
-                <S.Form onSubmit={onSubmit}>
+                <Stack
+                    direction='column'
+                    spacing={3}
+                    component='form'
+                    onSubmit={(...args) => void onSubmit(...args)}
+                >
                     <Controller
                         name='title'
                         control={control}
@@ -103,8 +106,11 @@ const AddAccountModal: FC<TProps> = (props) => {
                             />
                         )}
                     />
-
-                    <S.Buttons>
+                    <Stack
+                        direction='row'
+                        spacing={3}
+                        justifyContent='flex-end'
+                    >
                         <Button
                             variant='text'
                             onClick={props.onCancel}
@@ -117,8 +123,8 @@ const AddAccountModal: FC<TProps> = (props) => {
                         >
                             Add
                         </Button>
-                    </S.Buttons>
-                </S.Form>
+                    </Stack>
+                </Stack>
             </Box>
         </Modal>
     );
