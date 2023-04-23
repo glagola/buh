@@ -6,6 +6,21 @@ import { z } from 'zod';
 
 import type { TRawAccountDetails, TCurrency } from '@/entites';
 
+const styleDialogTitle = {
+    borderWidth: 1,
+};
+
+const autocompleteProps = {
+    disablePortal: true,
+    getOptionLabel: (currency: TCurrency) => currency.isoCode,
+};
+
+const styleDialogActions = {
+    gap: 3,
+    p: 3,
+    pt: 0,
+};
+
 const resolver = zodResolver(
     z.object({
         title: z.string().min(3),
@@ -19,8 +34,6 @@ const resolver = zodResolver(
         ),
     }),
 );
-
-const getCurrencyLabel = (currency: TCurrency) => currency.isoCode;
 
 type TProps = {
     open: boolean;
@@ -39,9 +52,7 @@ const AddAccountModal: FC<TProps> = (props) => (
         <DialogTitle
             component='h2'
             variant='h5'
-            sx={{
-                borderWidth: 1,
-            }}
+            sx={styleDialogTitle}
         >
             Add account
         </DialogTitle>
@@ -63,15 +74,12 @@ const AddAccountModal: FC<TProps> = (props) => (
                     <AutocompleteElement
                         name='currency'
                         label='Currency'
-                        autocompleteProps={{
-                            disablePortal: true,
-                            getOptionLabel: getCurrencyLabel,
-                        }}
+                        autocompleteProps={autocompleteProps}
                         options={props.currencies}
                     />
                 </Stack>
             </DialogContent>
-            <DialogActions sx={{ gap: 3, p: 3, pt: 0 }}>
+            <DialogActions sx={styleDialogActions}>
                 <Button
                     variant='text'
                     onClick={props.onCancel}
