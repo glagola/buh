@@ -27,18 +27,6 @@ const schema = z.object({
     ),
 });
 
-const style = {
-    position: 'absolute',
-    top: '100px',
-    left: '50%',
-    transform: 'translate(-50%, 0)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
-
 const getCurrencyLabel = (currency: TCurrency) => currency.isoCode;
 
 type TProps = {
