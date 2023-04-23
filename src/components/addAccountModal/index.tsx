@@ -1,6 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Autocomplete, Box, Button, Modal, Stack, TextField, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
+import {
+    Autocomplete,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    TextField,
+} from '@mui/material';
 import { type FC } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -49,68 +57,65 @@ const AddAccountModal: FC<TProps> = (props) => {
     const onSubmit = handleSubmit(props.onSuccess);
 
     return (
-        <Modal
-            open={props.open}
-            onClose={props.onCancel}
-        >
-            <Box sx={style}>
-                <Typography
+        <>
+            <Dialog
+                open={props.open}
+                onClose={props.onCancel}
+                fullWidth
+                maxWidth='sm'
+            >
+                <DialogTitle
                     component='h2'
                     variant='h5'
-                    sx={{
-                        borderBottom: '1px solid',
-                        borderBottomColor: grey[300],
-                        pb: 1,
-                        mb: 3,
-                    }}
                 >
                     Add account
-                </Typography>
-                <Stack
-                    direction='column'
-                    spacing={3}
-                    component='form'
-                    onSubmit={(...args) => void onSubmit(...args)}
-                >
-                    <Controller
-                        name='title'
-                        control={control}
-                        render={({ field: { value: _, ...field }, fieldState: { invalid, error } }) => (
-                            <TextField
-                                {...field}
-                                label='Title'
-                                error={invalid}
-                                helperText={error?.message}
-                            />
-                        )}
-                    />
-
-                    <Controller
-                        name='currency'
-                        control={control}
-                        render={({ field: { value: _, onChange, ...field }, fieldState: { invalid, error } }) => (
-                            <Autocomplete
-                                {...field}
-                                onChange={(_, value) => onChange(value)}
-                                disablePortal
-                                options={props.currencies}
-                                getOptionLabel={getCurrencyLabel}
-                                renderInput={(params) => (
+                </DialogTitle>
+                <form onSubmit={(...args) => void onSubmit(...args)}>
+                    <DialogContent>
+                        <Stack
+                            direction='column'
+                            spacing={3}
+                        >
+                            <Controller
+                                name='title'
+                                control={control}
+                                render={({ field: { value: _, ...field }, fieldState: { invalid, error } }) => (
                                     <TextField
-                                        {...params}
-                                        label='Currency'
+                                        {...field}
+                                        label='Title'
                                         error={invalid}
-                                        helperText={error?.message}
+                                        helperText={error?.message ?? ''}
                                     />
                                 )}
                             />
-                        )}
-                    />
-                    <Stack
-                        direction='row'
-                        spacing={3}
-                        justifyContent='flex-end'
-                    >
+
+                            <Controller
+                                name='currency'
+                                control={control}
+                                render={({
+                                    field: { value: _, onChange, ...field },
+                                    fieldState: { invalid, error },
+                                }) => (
+                                    <Autocomplete
+                                        {...field}
+                                        onChange={(_, value) => onChange(value)}
+                                        disablePortal
+                                        options={props.currencies}
+                                        getOptionLabel={getCurrencyLabel}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label='Currency'
+                                                error={invalid}
+                                                helperText={error?.message ?? ''}
+                                            />
+                                        )}
+                                    />
+                                )}
+                            />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
                         <Button
                             variant='text'
                             onClick={props.onCancel}
@@ -123,10 +128,10 @@ const AddAccountModal: FC<TProps> = (props) => {
                         >
                             Add
                         </Button>
-                    </Stack>
-                </Stack>
-            </Box>
-        </Modal>
+                    </DialogActions>
+                </form>
+            </Dialog>
+        </>
     );
 };
 
