@@ -27,7 +27,7 @@ const AccountStateInput = <T extends FieldValues>(props: UseControllerProps<T>) 
             onChange={onChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            value={focused || invalid ? value : safeEvaluate(value) ?? ''}
+            value={focused || invalid ? value : safeEvaluate(value) ?? ''} // TODO: format money properly with spaces
             error={invalid}
         />
     );

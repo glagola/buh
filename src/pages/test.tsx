@@ -1,14 +1,15 @@
-import { Button } from '@mui/material';
-import arrayMutators from 'final-form-arrays';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
 import { useMemo, useState } from 'react';
-import { Form } from 'react-final-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
-import AccountsGroup from '@/components/accountsGroup';
+import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
 import AddAccountModal from '@/components/addAccountModal';
-import type { TAccountState, TCurrency, TRawAccountDetails } from '@/entites';
+import { type THistoryItemForm, historyItemFormSchema } from '@/components/form';
+import { type TAccountState, type TCurrency, type TRawAccountDetails } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
     currencies,
@@ -18,7 +19,7 @@ import {
 type TAccountStateByCurrency = Record<TCurrency['isoCode'], TAccountState[]>;
 
 const TestPage: NextPage = () => {
-    const [showModal, toggleModal] = useToggle(true);
+    const [showModal, toggleModal] = useToggle(false);
     const recent = useSelector(recentlyUsedAccountsGroupByCurrency);
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
     const usedCurencies = useSelector(currencies);
@@ -33,73 +34,72 @@ const TestPage: NextPage = () => {
         ]),
     );
 
-    const mutators = useMemo(() => ({ ...arrayMutators }), []);
-
     const initialValues = useMemo(
-        () => ({
-            accounts: current.reduce((res: TAccountStateByCurrency, [currency, accounts]) => {
+        () =>
+            current.reduce((res: TAccountStateByCurrency, [currency, accounts]) => {
                 res[currency.isoCode] = accounts;
                 return res;
             }, {}),
-        }),
         [current],
     );
 
-    const handleSubmit = () => {
+    const _handleSubmit = () => {
         void 0;
     };
 
+    const form = useForm<THistoryItemForm>({
+        defaultValues: initialValues,
+        resolver: zodResolver(historyItemFormSchema),
+        mode: 'all',
+    });
+
     return (
-        <Form<{ accounts: TAccountStateByCurrency | undefined }>
-            onSubmit={handleSubmit}
-            mutators={mutators}
-            initialValues={initialValues}
-            render={({ handleSubmit, values, form }) => (
-                <>
-                    <Button
-                        variant='contained'
-                        onClick={toggleModal}
-                    >
-                        Create new account
-                    </Button>
-                    <form onSubmit={(...args) => void handleSubmit(...args)}>
-                        <div className='container mx-auto my-20'>
-                            {Object.entries(values.accounts ?? {}).map(([isoCode]) => (
-                                <AccountsGroup
+        <>
+            <Button
+                variant='contained'
+                onClick={toggleModal}
+            >
+                Create new account
+            </Button>
+            <Container>
+                <FormProvider {...form}>
+                    <form onSubmit={(...args) => void form.handleSubmit(_handleSubmit)(...args)}>
+                        <Stack spacing={3}>
+                            {Object.entries(form.getValues()).map(([isoCode]) => (
+                                <AccountsGroupedByCurrency
                                     key={isoCode}
-                                    fieldName={`accounts.${isoCode}`}
                                     title={`Accounts in ${isoCode}`}
+                                    fieldPath={isoCode}
                                     archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
                                 />
                             ))}
-                        </div>
+                        </Stack>
                     </form>
-                    <AddAccountModal
-                        currencies={usedCurencies}
-                        open={showModal}
-                        onCancel={toggleModal}
-                        onSuccess={(rawAccount: TRawAccountDetails) => {
-                            toggleModal();
-                            const accountState: TAccountState = {
-                                account: {
-                                    ...rawAccount,
-                                    id: rawAccount.title,
-                                    createdAt: new Date(),
-                                },
+                </FormProvider>
+            </Container>
 
-                                formula: '',
-                            };
-                            const currencyIsoCode = rawAccount.currency.isoCode;
+            <AddAccountModal
+                currencies={usedCurencies}
+                open={showModal}
+                onCancel={toggleModal}
+                onSuccess={(rawAccount: TRawAccountDetails) => {
+                    toggleModal();
+                    const accountState: TAccountState = {
+                        account: {
+                            ...rawAccount,
+                            id: rawAccount.title,
+                            createdAt: new Date(),
+                        },
+                        formula: '',
+                    };
+                    const currencyIsoCode = rawAccount.currency.isoCode;
 
-                            form.change('accounts', {
-                                ...(values.accounts ?? {}),
-                                [currencyIsoCode]: [...(values.accounts?.[currencyIsoCode] ?? []), accountState],
-                            });
-                        }}
-                    />
-                </>
-            )}
-        />
+                    const states = form.getValues()[currencyIsoCode] ?? [];
+                    states.push(accountState);
+                    form.setValue(currencyIsoCode, states);
+                }}
+            />
+        </>
     );
 };
 

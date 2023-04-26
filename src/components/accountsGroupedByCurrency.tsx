@@ -10,8 +10,8 @@ import { useToggle } from 'react-use';
 
 import { type TAccount, type TArchivedAccount } from '@/entites';
 
-import { type THistoryItemForm } from '../form';
 import AccountStateInput from './accountStateInput';
+import { type THistoryItemForm } from './form';
 
 type TProps = {
     title: string;
