@@ -1,9 +1,7 @@
-/** @type {import("prettier").Config} */
+/** @type {import("@trivago/prettier-plugin-sort-imports").PrettierConfig} */
 const config = {
     pluginSearchDirs: ['./node_modules'],
-    plugins: [
-        '@trivago/prettier-plugin-sort-imports',
-    ],
+    plugins: ['@trivago/prettier-plugin-sort-imports'],
     tabWidth: 4,
     useTabs: false,
     semi: true,
