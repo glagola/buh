@@ -2,7 +2,6 @@
 const config = {
     pluginSearchDirs: ['./node_modules'],
     plugins: [
-        'prettier-plugin-tailwindcss',
         '@trivago/prettier-plugin-sort-imports',
     ],
     tabWidth: 4,
