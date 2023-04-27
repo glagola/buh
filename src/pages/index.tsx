@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
@@ -24,23 +24,13 @@ const TestPage: NextPage = () => {
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
     const usedCurencies = useSelector(currencies);
 
-    const [current] = useState(() =>
-        [...recent.entries()].map(([currency, accounts]): [TCurrency, TAccountState[]] => [
-            currency,
-            accounts.map((account) => ({
-                account,
-                formula: '',
-            })),
-        ]),
-    );
-
-    const initialValues = useMemo(
+    const defaultValues = useMemo(
         () =>
-            current.reduce((res: TAccountStateByCurrency, [currency, accounts]) => {
-                res[currency.isoCode] = accounts;
+            [...recent.entries()].reduce((res: TAccountStateByCurrency, [currency, accounts]) => {
+                res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
                 return res;
             }, {}),
-        [current],
+        [recent],
     );
 
     const _handleSubmit = () => {
@@ -48,7 +38,7 @@ const TestPage: NextPage = () => {
     };
 
     const form = useForm<THistoryItemForm>({
-        defaultValues: initialValues,
+        defaultValues,
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
