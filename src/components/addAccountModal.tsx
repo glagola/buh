@@ -11,7 +11,6 @@ const styleDialogTitle = {
 };
 
 const autocompleteProps = {
-    disablePortal: true,
     getOptionLabel: (currency: TCurrency) => currency.isoCode,
     isOptionEqualToValue: (option: TCurrency, value: TCurrency) => option.isoCode === value.isoCode,
 };
