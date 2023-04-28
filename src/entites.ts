@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { safeEvaluate } from './utils/expression';
 
 export const ZCurrency = z.object({
-    isoCode: z.string(),
+    isoCode: z
+        .string()
+        .min(3)
+        .refine((value) => value.toUpperCase() === value, 'Must be in uppercase'),
 });
 export type TCurrency = z.infer<typeof ZCurrency>;
 
