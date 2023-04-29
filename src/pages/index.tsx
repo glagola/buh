@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
 import { useMemo, useState } from 'react';
-import { FormProvider, useForm, useWatch } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
@@ -55,10 +55,6 @@ const TestPage: NextPage = () => {
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
-
-    useWatch({ control: form.control });
-
-    console.log(form.getValues());
 
     return (
         <>
