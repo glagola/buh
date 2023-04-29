@@ -1,14 +1,21 @@
 import { z } from 'zod';
 
-import { safeEvaluate } from './utils/expression';
+export const ZCurrencyISOCode = z
+    .string()
+    .min(3)
+    .refine((value) => value.toUpperCase() === value, 'Must be in uppercase');
 
 export const ZCurrency = z.object({
-    isoCode: z
-        .string()
-        .min(3)
-        .refine((value) => value.toUpperCase() === value, 'Must be in uppercase'),
+    isoCode: ZCurrencyISOCode,
 });
 export type TCurrency = z.infer<typeof ZCurrency>;
+
+export const ZCurrencyQuote = z.object({
+    currency: ZCurrency,
+    quote: z.number().refine((value) => value > 0, 'Must be above 0'),
+});
+
+export type TCurrencyQuote = z.infer<typeof ZCurrencyQuote>;
 
 export const ZRawAccountDetails = z.object({
     title: z.string(),
@@ -29,12 +36,6 @@ export const ZArchivedAccount = z.object({
     archivedAt: z.date(),
 });
 export type TArchivedAccount = z.infer<typeof ZArchivedAccount>;
-
-export const ZAccountState = z.object({
-    account: ZAccount,
-    formula: z.string().refine((value) => undefined !== safeEvaluate(value)),
-});
-export type TAccountState = z.infer<typeof ZAccountState>;
 
 export const ZAccountHistoryState = z.object({
     account: ZAccount,

@@ -4,7 +4,11 @@ import { type FieldValues, type UseControllerProps, useController } from 'react-
 
 import { safeEvaluate } from '@/utils/expression';
 
-const AccountStateInput = <T extends FieldValues>(props: UseControllerProps<T>) => {
+type TProps = {
+    label?: string;
+};
+
+const ExpressionInput = <T extends FieldValues>(props: UseControllerProps<T> & TProps) => {
     const [focused, setFocused] = useState(false);
 
     const {
@@ -24,6 +28,7 @@ const AccountStateInput = <T extends FieldValues>(props: UseControllerProps<T>) 
             size='small'
             ref={ref}
             name={name}
+            label={props.label}
             onChange={onChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -33,4 +38,4 @@ const AccountStateInput = <T extends FieldValues>(props: UseControllerProps<T>) 
     );
 };
 
-export default AccountStateInput;
+export default ExpressionInput;

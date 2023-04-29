@@ -8,14 +8,14 @@ import { DateTime } from 'luxon';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useToggle } from 'react-use';
 
-import { type TAccount, type TArchivedAccount } from '@/entites';
+import { type TCurrency, type TAccount, type TArchivedAccount } from '@/entites';
 
-import AccountStateInput from './accountStateInput';
+import ExpressionInput from './expressionInput';
 import { type THistoryItemForm } from './form';
 
 type TProps = {
     title: string;
-    fieldPath: string;
+    currency: TCurrency;
     archivedAccounts: TArchivedAccount[];
 };
 
@@ -23,7 +23,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
     const [isArchiving, toggleArchive] = useToggle(false);
     const { control } = useFormContext<THistoryItemForm>();
     const acc = useFieldArray({
-        name: props.fieldPath,
+        name: `accounts.${props.currency.isoCode}`,
         control,
     });
 
@@ -76,9 +76,9 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                     primary={`${state.account.title}, ${state.account.currency.isoCode}`}
                                 />
                                 <div style={{ flexGrow: 1 }}>
-                                    <AccountStateInput
+                                    <ExpressionInput
                                         control={control}
-                                        name={`${props.fieldPath}.${index}.formula`}
+                                        name={`accounts.${state.account.currency.isoCode}.${index}.formula`}
                                     />
                                 </div>
                                 {isArchiving && (

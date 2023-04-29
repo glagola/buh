@@ -2,22 +2,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
 import { useMemo, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
 import AddAccountModal from '@/components/addAccountModal';
 import AddCurrencyModal from '@/components/addCurrencyModal';
-import { type THistoryItemForm, historyItemFormSchema } from '@/components/form';
-import { type TAccountState, type TCurrency, type TRawAccountDetails } from '@/entites';
+import CurrencyQuotesField from '@/components/currencyQuotesField';
+import {
+    type THistoryItemForm,
+    historyItemFormSchema,
+    type TAccountState,
+    type TAccountStateByCurrency,
+} from '@/components/form';
+import { getUsedCurrencies } from '@/components/utils';
+import { type TRawAccountDetails } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
     currencies,
     recentlyUsedAccountsGroupByCurrency,
 } from '@/store/history';
-
-type TAccountStateByCurrency = Record<TCurrency['isoCode'], TAccountState[]>;
 
 const TestPage: NextPage = () => {
     const [showModal, toggleModal] = useToggle(false);
@@ -26,16 +31,20 @@ const TestPage: NextPage = () => {
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
     const usedCurencies = useSelector(currencies);
 
-    const [currentCurrencies, setCurrentCurrencies] = useState(() => usedCurencies);
+    const [currentCurrencies, setCurrentCurrencies] = useState(usedCurencies);
 
-    const defaultValues = useMemo(
-        () =>
-            [...recent.entries()].reduce((res: TAccountStateByCurrency, [currency, accounts]) => {
-                res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
-                return res;
-            }, {}),
-        [recent],
-    );
+    const defaultValues = useMemo(() => {
+        const accounts = [...recent.entries()].reduce<TAccountStateByCurrency>((res, [currency, accounts]) => {
+            res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
+            return res;
+        }, {});
+
+        const quotes = getUsedCurrencies(accounts).map((currency) => ({ currency, formula: '' }));
+        return {
+            accounts,
+            quotes,
+        };
+    }, [recent]);
 
     const _handleSubmit = () => {
         void 0;
@@ -46,6 +55,10 @@ const TestPage: NextPage = () => {
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
+
+    useWatch({ control: form.control });
+
+    console.log(form.getValues());
 
     return (
         <>
@@ -65,15 +78,16 @@ const TestPage: NextPage = () => {
                 <FormProvider {...form}>
                     <form onSubmit={(...args) => void form.handleSubmit(_handleSubmit)(...args)}>
                         <Stack spacing={3}>
-                            {Object.entries(form.getValues()).map(([isoCode]) => (
+                            {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
                                 <AccountsGroupedByCurrency
                                     key={isoCode}
                                     title={`Accounts in ${isoCode}`}
-                                    fieldPath={isoCode}
+                                    currency={{ isoCode }}
                                     archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
                                 />
                             ))}
                         </Stack>
+                        <CurrencyQuotesField />
                     </form>
                 </FormProvider>
             </Container>
@@ -94,9 +108,9 @@ const TestPage: NextPage = () => {
                     };
                     const currencyIsoCode = rawAccount.currency.isoCode;
 
-                    const states = form.getValues()[currencyIsoCode] ?? [];
+                    const states = form.getValues('accounts')[currencyIsoCode] ?? [];
                     states.push(accountState);
-                    form.setValue(currencyIsoCode, states);
+                    form.setValue(`accounts.${currencyIsoCode}`, states);
                 }}
             />
 
@@ -105,7 +119,7 @@ const TestPage: NextPage = () => {
                 existingCurrencies={currentCurrencies}
                 onCancel={toggleCurrencyModal}
                 onSuccess={(currency) => {
-                    form.setValue(currency.isoCode, []);
+                    form.setValue(`accounts.${currency.isoCode}`, []);
                     setCurrentCurrencies((currencies) => [...currencies, currency]);
                     toggleCurrencyModal();
                 }}
