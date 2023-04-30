@@ -1,3 +1,4 @@
+import { Stack, Typography } from '@mui/material';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { type TCurrency } from '@/entites';
@@ -18,16 +19,24 @@ const CurrencyQuotesField = () => {
     }, []);
 
     return (
-        <ul>
-            {currencies.map((currency, index) => (
-                <li key={currency.isoCode}>
+        <>
+            <Typography
+                variant='h5'
+                component='h2'
+                sx={{ mb: 2 }}
+            >
+                Currency quotes
+            </Typography>
+            <Stack spacing={2}>
+                {currencies.map((currency, index) => (
                     <ExpressionInput
+                        key={currency.isoCode}
                         name={`quotes.${index}.formula`}
                         label={`Price of 1 ${currency.isoCode} in Abstract currency`}
                     />
-                </li>
-            ))}
-        </ul>
+                ))}
+            </Stack>
+        </>
     );
 };
 
