@@ -139,11 +139,19 @@ const TestPage: NextPage = () => {
                                 gap={3}
                                 justifyContent='flex-end'
                             >
-                                <Button variant='text'>Cancel</Button>
+                                <Button variant='text'>
+                                    Cancel
+                                    {
+                                        // TODO confirmation needed
+                                    }
+                                </Button>
                                 <Button
                                     variant='contained'
                                     type='submit'
                                 >
+                                    {
+                                        // TODO confirmation needed
+                                    }
                                     Save
                                 </Button>
                             </Stack>
