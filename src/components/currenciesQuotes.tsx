@@ -7,7 +7,7 @@ import { isNonEmpty } from '@/utils/array';
 import ExpressionInput from './expressionInput';
 import { type THistoryItemForm } from './form';
 
-const CurrencyQuotesField = () => {
+const CurrenciesQuotes = () => {
     const form = useFormContext<THistoryItemForm>();
     useWatch({ control: form.control });
 
@@ -40,4 +40,4 @@ const CurrencyQuotesField = () => {
     );
 };
 
-export default CurrencyQuotesField;
+export default CurrenciesQuotes;

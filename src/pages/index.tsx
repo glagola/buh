@@ -9,7 +9,7 @@ import { useToggle } from 'react-use';
 import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
 import AddAccountModal from '@/components/addAccountModal';
 import AddCurrencyModal from '@/components/addCurrencyModal';
-import CurrencyQuotesField from '@/components/currencyQuotesField';
+import CurrenciesQuotes from '@/components/currenciesQuotes';
 import {
     type THistoryItemForm,
     historyItemFormSchema,
@@ -25,26 +25,30 @@ import {
 } from '@/store/history';
 
 const TestPage: NextPage = () => {
-    const [showModal, toggleModal] = useToggle(false);
-    const [showCurrencyModal, toggleCurrencyModal] = useToggle(false);
-    const recent = useSelector(recentlyUsedAccountsGroupByCurrency);
-    const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
-    const usedCurencies = useSelector(currencies);
+    const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
+    const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
-    const [currentCurrencies, setCurrentCurrencies] = useState(usedCurencies);
+    const accountsOfLastRecord = useSelector(recentlyUsedAccountsGroupByCurrency);
+    const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
+    const currenciesEverUsed = useSelector(currencies);
+
+    const [currentCurrencies, setCurrentCurrencies] = useState(currenciesEverUsed);
 
     const defaultValues = useMemo(() => {
-        const accounts = [...recent.entries()].reduce<TAccountStateByCurrency>((res, [currency, accounts]) => {
-            res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
-            return res;
-        }, {});
+        const accounts = [...accountsOfLastRecord.entries()].reduce<TAccountStateByCurrency>(
+            (res, [currency, accounts]) => {
+                res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
+                return res;
+            },
+            {},
+        );
 
         const quotes = getUsedCurrencies(accounts).map((currency) => ({ currency, formula: '' }));
         return {
             accounts,
             quotes,
         };
-    }, [recent]);
+    }, [accountsOfLastRecord]);
 
     const _handleSubmit = () => {
         void 0;
@@ -60,13 +64,13 @@ const TestPage: NextPage = () => {
         <>
             <Button
                 variant='contained'
-                onClick={toggleModal}
+                onClick={toggleNewAccountModal}
             >
                 Create new account
             </Button>
             <Button
                 variant='outlined'
-                onClick={toggleCurrencyModal}
+                onClick={toggleNewCurrencyModal}
             >
                 Create new currency
             </Button>
@@ -83,17 +87,17 @@ const TestPage: NextPage = () => {
                                 />
                             ))}
                         </Stack>
-                        <CurrencyQuotesField />
+                        <CurrenciesQuotes />
                     </form>
                 </FormProvider>
             </Container>
 
             <AddAccountModal
                 currencies={currentCurrencies}
-                open={showModal}
-                onCancel={toggleModal}
+                open={openNewAccountModal}
+                onCancel={toggleNewAccountModal}
                 onSuccess={(rawAccount: TRawAccountDetails) => {
-                    toggleModal();
+                    toggleNewAccountModal();
                     const accountState: TAccountState = {
                         account: {
                             ...rawAccount,
@@ -111,13 +115,13 @@ const TestPage: NextPage = () => {
             />
 
             <AddCurrencyModal
-                open={showCurrencyModal}
+                open={openNewCurrencyModal}
                 existingCurrencies={currentCurrencies}
-                onCancel={toggleCurrencyModal}
+                onCancel={toggleNewCurrencyModal}
                 onSuccess={(currency) => {
                     form.setValue(`accounts.${currency.isoCode}`, []);
                     setCurrentCurrencies((currencies) => [...currencies, currency]);
-                    toggleCurrencyModal();
+                    toggleNewCurrencyModal();
                 }}
             />
         </>
