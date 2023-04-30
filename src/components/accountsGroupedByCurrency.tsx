@@ -72,15 +72,14 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                 spacing={2}
                             >
                                 <ListItemText
-                                    sx={{ flexGrow: 0 }}
+                                    sx={{ flexShrink: 0 }}
                                     primary={`${state.account.title}, ${state.account.currency.isoCode}`}
                                 />
-                                <div style={{ flexGrow: 1 }}>
-                                    <ExpressionInput
-                                        control={control}
-                                        name={`accounts.${state.account.currency.isoCode}.${index}.formula`}
-                                    />
-                                </div>
+                                <ExpressionInput
+                                    control={control}
+                                    name={`accounts.${state.account.currency.isoCode}.${index}.formula`}
+                                />
+
                                 {isArchiving && (
                                     <IconButton
                                         aria-label='archive'

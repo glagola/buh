@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
 import { type FormEvent, useCallback, useMemo, useState } from 'react';
@@ -97,32 +98,56 @@ const TestPage: NextPage = () => {
 
     return (
         <>
-            <Button
-                variant='contained'
-                onClick={toggleNewAccountModal}
-            >
-                Create new account
-            </Button>
-            <Button
-                variant='outlined'
-                onClick={toggleNewCurrencyModal}
-            >
-                Create new currency
-            </Button>
             <Container>
+                <Stack
+                    direction='row'
+                    gap={3}
+                    justifyContent='flex-end'
+                    sx={{ mt: 3, mb: 3 }}
+                >
+                    <Button
+                        startIcon={<AddIcon />}
+                        variant='outlined'
+                        onClick={toggleNewAccountModal}
+                    >
+                        Account
+                    </Button>
+                    <Button
+                        startIcon={<AddIcon />}
+                        variant='outlined'
+                        onClick={toggleNewCurrencyModal}
+                    >
+                        Currency
+                    </Button>
+                </Stack>
                 <FormProvider {...form}>
                     <form onSubmit={handleSubmit}>
                         <Stack spacing={3}>
-                            {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
-                                <AccountsGroupedByCurrency
-                                    key={isoCode}
-                                    title={`Accounts in ${isoCode}`}
-                                    currency={{ isoCode }}
-                                    archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
-                                />
-                            ))}
+                            <Stack spacing={3}>
+                                {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
+                                    <AccountsGroupedByCurrency
+                                        key={isoCode}
+                                        title={`Accounts in ${isoCode}`}
+                                        currency={{ isoCode }}
+                                        archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
+                                    />
+                                ))}
+                            </Stack>
+                            <CurrenciesQuotes />
+                            <Stack
+                                direction='row'
+                                gap={3}
+                                justifyContent='flex-end'
+                            >
+                                <Button variant='text'>Cancel</Button>
+                                <Button
+                                    variant='contained'
+                                    type='submit'
+                                >
+                                    Save
+                                </Button>
+                            </Stack>
                         </Stack>
-                        <CurrenciesQuotes />
                     </form>
                 </FormProvider>
             </Container>

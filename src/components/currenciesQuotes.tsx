@@ -19,24 +19,21 @@ const CurrenciesQuotes = () => {
     }, []);
 
     return (
-        <>
+        <Stack spacing={2}>
             <Typography
                 variant='h5'
                 component='h2'
-                sx={{ mb: 2 }}
             >
                 Currency quotes
             </Typography>
-            <Stack spacing={2}>
-                {currencies.map((currency, index) => (
-                    <ExpressionInput
-                        key={currency.isoCode}
-                        name={`quotes.${index}.formula`}
-                        label={`Price of 1 ${currency.isoCode} in Abstract currency`}
-                    />
-                ))}
-            </Stack>
-        </>
+            {currencies.map((currency, index) => (
+                <ExpressionInput
+                    key={currency.isoCode}
+                    name={`quotes.${index}.formula`}
+                    label={`Price of 1 ${currency.isoCode} in Abstract currency`}
+                />
+            ))}
+        </Stack>
     );
 };
 
