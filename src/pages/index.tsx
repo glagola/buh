@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
-import { useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
@@ -17,7 +17,7 @@ import {
     type TAccountStateByCurrency,
 } from '@/components/form';
 import { currenciesOfAccounts } from '@/components/utils';
-import { type TRawAccountDetails } from '@/entites';
+import { type TCurrency, type TRawAccountDetails } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
     currencies,
@@ -51,15 +51,49 @@ const TestPage: NextPage = () => {
         };
     }, [accountsOfLastRecord]);
 
-    const _handleSubmit = () => {
-        void 0;
-    };
-
     const form = useForm<THistoryItemForm>({
         defaultValues,
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
+
+    const _handleSubmit = () => {
+        void 0;
+    };
+
+    const handleSubmit = useCallback(
+        (e: FormEvent<HTMLFormElement>) => void form.handleSubmit(_handleSubmit)(e),
+        [form],
+    );
+
+    const handleAccountAdd = useCallback(
+        (rawAccount: TRawAccountDetails) => {
+            toggleNewAccountModal();
+            const accountState: TAccountState = {
+                account: {
+                    ...rawAccount,
+                    id: rawAccount.title,
+                    createdAt: new Date(),
+                },
+                formula: '',
+            };
+            const currencyIsoCode = rawAccount.currency.isoCode;
+
+            const states = form.getValues('accounts')[currencyIsoCode] ?? [];
+            states.push(accountState);
+            form.setValue(`accounts.${currencyIsoCode}`, states);
+        },
+        [form, toggleNewAccountModal],
+    );
+
+    const handleCurrencyAdd = useCallback(
+        (currency: TCurrency) => {
+            form.setValue(`accounts.${currency.isoCode}`, []);
+            setCurrentCurrencies((currencies) => [...currencies, currency]);
+            toggleNewCurrencyModal();
+        },
+        [form, toggleNewCurrencyModal],
+    );
 
     return (
         <>
@@ -77,7 +111,7 @@ const TestPage: NextPage = () => {
             </Button>
             <Container>
                 <FormProvider {...form}>
-                    <form onSubmit={(...args) => void form.handleSubmit(_handleSubmit)(...args)}>
+                    <form onSubmit={handleSubmit}>
                         <Stack spacing={3}>
                             {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
                                 <AccountsGroupedByCurrency
@@ -97,33 +131,14 @@ const TestPage: NextPage = () => {
                 currencies={currentCurrencies}
                 open={openNewAccountModal}
                 onCancel={toggleNewAccountModal}
-                onSuccess={(rawAccount: TRawAccountDetails) => {
-                    toggleNewAccountModal();
-                    const accountState: TAccountState = {
-                        account: {
-                            ...rawAccount,
-                            id: rawAccount.title,
-                            createdAt: new Date(),
-                        },
-                        formula: '',
-                    };
-                    const currencyIsoCode = rawAccount.currency.isoCode;
-
-                    const states = form.getValues('accounts')[currencyIsoCode] ?? [];
-                    states.push(accountState);
-                    form.setValue(`accounts.${currencyIsoCode}`, states);
-                }}
+                onSuccess={handleAccountAdd}
             />
 
             <AddCurrencyModal
                 open={openNewCurrencyModal}
                 existingCurrencies={currentCurrencies}
                 onCancel={toggleNewCurrencyModal}
-                onSuccess={(currency) => {
-                    form.setValue(`accounts.${currency.isoCode}`, []);
-                    setCurrentCurrencies((currencies) => [...currencies, currency]);
-                    toggleNewCurrencyModal();
-                }}
+                onSuccess={handleCurrencyAdd}
             />
         </>
     );
