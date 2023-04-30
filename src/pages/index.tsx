@@ -16,7 +16,7 @@ import {
     type TAccountState,
     type TAccountStateByCurrency,
 } from '@/components/form';
-import { getUsedCurrencies } from '@/components/utils';
+import { currenciesOfAccounts } from '@/components/utils';
 import { type TRawAccountDetails } from '@/entites';
 import {
     archivedAccountsGroupByCurrencyAndSortByUsage,
@@ -43,7 +43,8 @@ const TestPage: NextPage = () => {
             {},
         );
 
-        const quotes = getUsedCurrencies(accounts).map((currency) => ({ currency, formula: '' }));
+        const quotes = currenciesOfAccounts(accounts).map((currency) => ({ currency, formula: '' }));
+
         return {
             accounts,
             quotes,
