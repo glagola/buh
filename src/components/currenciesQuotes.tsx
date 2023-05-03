@@ -1,5 +1,4 @@
 import { Stack, Typography } from '@mui/material';
-import { type FC } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { type TCurrency } from '@/entites';

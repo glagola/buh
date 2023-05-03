@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { type FormEvent, type FC, useCallback } from 'react';
+import { type FormEvent, type FC, useCallback, useMemo } from 'react';
 import { TextFieldElement, useForm } from 'react-hook-form-mui';
+import { z } from 'zod';
 
-import { type TCurrency, ZCurrency } from '@/entites';
+import { type TCurrency, ZCurrencyISOCode } from '@/entites';
 
 const styleDialogTitle = {
     borderWidth: 1,
@@ -15,8 +16,6 @@ const styleDialogActions = {
     pt: 0,
 };
 
-const resolver = zodResolver(ZCurrency);
-
 type TProps = {
     open: boolean;
     existingCurrencies: TCurrency[];
@@ -27,6 +26,19 @@ type TProps = {
 const fieldName = 'isoCode';
 
 const AddCurrencyModal: FC<TProps> = (props) => {
+    const resolver = useMemo(
+        () =>
+            zodResolver(
+                z.object({
+                    isoCode: ZCurrencyISOCode.refine(
+                        (value) => !props.existingCurrencies.some(({ isoCode }) => isoCode === value),
+                        'Already exists',
+                    ),
+                }),
+            ),
+        [props.existingCurrencies],
+    );
+
     const form = useForm<TCurrency>({
         resolver,
         mode: 'all',
@@ -35,19 +47,9 @@ const AddCurrencyModal: FC<TProps> = (props) => {
         },
     });
 
-    const { existingCurrencies, onSuccess } = props;
     const handleSubmit = useCallback(
-        (e: FormEvent<HTMLFormElement>) =>
-            void form.handleSubmit((data) => {
-                const alreadyExists = existingCurrencies.some(({ isoCode }) => isoCode === data.isoCode);
-
-                if (alreadyExists) {
-                    return form.setError(fieldName, { type: 'unique', message: 'Must be unique' });
-                }
-
-                onSuccess(data);
-            })(e),
-        [form, existingCurrencies, onSuccess],
+        (e: FormEvent<HTMLFormElement>) => void form.handleSubmit(props.onSuccess)(e),
+        [form, props.onSuccess],
     );
 
     const handleDialogAnimationEnd = useCallback(() => form.reset(), [form]);
