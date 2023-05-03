@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import { type NextPage } from 'next';
-import { type FormEvent, useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
@@ -12,18 +12,15 @@ import AddAccountModal from '@/components/addAccountModal';
 import AddCurrencyModal from '@/components/addCurrencyModal';
 import CurrenciesQuotes from '@/components/currenciesQuotes';
 import {
-    type THistoryItemForm,
     historyItemFormSchema,
     type TAccountState,
     type TAccountStateByCurrency,
+    type THistoryItemForm,
 } from '@/components/form';
+import { useCurrencies } from '@/components/hooks';
 import { currenciesOfAccounts } from '@/components/utils';
 import { type TCurrency, type TRawAccountDetails } from '@/entites';
-import {
-    archivedAccountsGroupByCurrencyAndSortByUsage,
-    currencies,
-    recentlyUsedAccountsGroupByCurrency,
-} from '@/store/history';
+import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
 
 const TestPage: NextPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
@@ -31,9 +28,8 @@ const TestPage: NextPage = () => {
 
     const accountsOfLastRecord = useSelector(recentlyUsedAccountsGroupByCurrency);
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
-    const currenciesEverUsed = useSelector(currencies);
 
-    const [currentCurrencies, setCurrentCurrencies] = useState(currenciesEverUsed);
+    const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
 
     const defaultValues = useMemo(() => {
         const accounts = [...accountsOfLastRecord.entries()].reduce<TAccountStateByCurrency>(
@@ -93,7 +89,7 @@ const TestPage: NextPage = () => {
             setCurrentCurrencies((currencies) => [...currencies, currency]);
             toggleNewCurrencyModal();
         },
-        [form, toggleNewCurrencyModal],
+        [form, toggleNewCurrencyModal, setCurrentCurrencies],
     );
 
     return (
