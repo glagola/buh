@@ -32,7 +32,7 @@ const ExpressionInput = <T extends FieldValues>(props: UseControllerProps<T> & T
             onChange={onChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            value={focused || invalid ? value : safeEvaluate(value) ?? ''} // TODO: format money properly with spaces
+            value={(focused || invalid ? value : safeEvaluate(value)) ?? ''} // TODO: format money properly with spaces
             error={invalid}
         />
     );
