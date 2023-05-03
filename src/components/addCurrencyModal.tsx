@@ -23,8 +23,6 @@ type TProps = {
     onSuccess: (rawCurrency: TCurrency) => void;
 };
 
-const fieldName = 'isoCode';
-
 const AddCurrencyModal: FC<TProps> = (props) => {
     const resolver = useMemo(
         () =>
@@ -74,7 +72,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
                     <TextFieldElement
                         fullWidth
                         control={form.control}
-                        name={fieldName}
+                        name='isoCode'
                         label='ISO currency code'
                     />
                 </DialogContent>
