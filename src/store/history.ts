@@ -1,69 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-import type { TBuh, TAccountHistoryState, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
+import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
 import { type TRootState } from '@/store';
 
-const currentDate = new Date();
-const pastDate1 = new Date(currentDate.getFullYear() - 1, 0, 1);
-const pastDate2 = new Date(currentDate.getFullYear() - 2, 0, 1);
-const pastDate3 = new Date(currentDate.getFullYear() - 3, 0, 1);
-
-const sampleCurrency1 = { isoCode: 'USD' };
-const sampleCurrency2 = { isoCode: 'EUR' };
-const sampleCurrency3 = sampleCurrency1;
-
-const sampleAccount1 = {
-    id: '123',
-    title: 'My USD Account',
-    currency: sampleCurrency1,
-    createdAt: pastDate1,
-};
-
-const sampleAccount2 = {
-    id: '456',
-    title: 'My EUR Account',
-    currency: sampleCurrency2,
-    createdAt: pastDate2,
-};
-
-const sampleAccount3 = {
-    id: '789',
-    title: 'My JPY Account',
-    currency: sampleCurrency3,
-    createdAt: pastDate3,
-};
-
-const sampleAccountHistoryState1 = {
-    account: sampleAccount1,
-    value: 100,
-};
-
-const sampleAccountHistoryState2 = {
-    account: sampleAccount2,
-    value: 200,
-};
-
-const sampleAccountHistoryState3 = {
-    account: sampleAccount3,
-    value: 300,
-};
-
 const initialState: TBuh = {
-    history: [
-        {
-            accounts: [sampleAccountHistoryState1],
-            createdAt: pastDate3,
-        },
-        {
-            accounts: [sampleAccountHistoryState1, sampleAccountHistoryState2],
-            createdAt: pastDate1,
-        },
-        {
-            accounts: [sampleAccountHistoryState1, sampleAccountHistoryState2, sampleAccountHistoryState3],
-            createdAt: pastDate3,
-        },
-    ],
+    history: [],
 };
 
 export const name = 'buh';
@@ -72,9 +14,9 @@ const slice = createSlice({
     name,
     initialState,
     reducers: {
-        storeHistoryItem: (state, action: PayloadAction<TAccountHistoryState[]>) => {
+        storeHistoryItem: (state, action: PayloadAction<TRawHistoryItem>) => {
             state.history.push({
-                accounts: action.payload,
+                ...action.payload,
 
                 createdAt: new Date(),
             });

@@ -43,8 +43,14 @@ export const ZAccountHistoryState = z.object({
 });
 export type TAccountHistoryState = z.infer<typeof ZAccountHistoryState>;
 
-export const ZHistoryItem = z.object({
+const ZRawHistoryItem = z.object({
     accounts: z.array(ZAccountHistoryState),
+    quotes: z.array(ZCurrencyQuote),
+});
+
+export type TRawHistoryItem = z.infer<typeof ZRawHistoryItem>;
+
+export const ZHistoryItem = ZRawHistoryItem.extend({
     createdAt: z.date(),
 });
 export type THistoryItem = z.infer<typeof ZHistoryItem>;
