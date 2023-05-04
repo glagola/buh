@@ -183,6 +183,7 @@ const TestPage: NextPage = () => {
                                 <Button
                                     variant='contained'
                                     type='submit'
+                                    disabled={!form.formState.isValid}
                                 >
                                     {
                                         // TODO confirmation needed
