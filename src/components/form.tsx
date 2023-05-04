@@ -12,7 +12,9 @@ const ZAccountState = z.object({
 export type TAccountState = z.infer<typeof ZAccountState>;
 
 export const historyItemFormSchema = z.object({
-    accounts: z.record(ZCurrencyISOCode, z.array(ZAccountState)),
+    accounts: z
+        .record(ZCurrencyISOCode, z.array(ZAccountState))
+        .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
     quotes: z.array(
         z.object({
             currency: ZCurrency,
