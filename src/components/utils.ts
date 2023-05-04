@@ -11,3 +11,19 @@ export function currenciesOfAccounts(accountsStateByCurrencyCode: TAccountStateB
         return res;
     }, []);
 }
+
+export const uniqueCurrencies = (...sources: TCurrency[][]): TCurrency[] => {
+    const set = new Set<TCurrency['isoCode']>();
+    const res: TCurrency[] = [];
+
+    for (const source of sources) {
+        for (const currency of source) {
+            if (set.has(currency.isoCode)) continue;
+
+            set.add(currency.isoCode);
+            res.push(currency);
+        }
+    }
+
+    return res;
+};

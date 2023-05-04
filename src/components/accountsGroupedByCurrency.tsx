@@ -5,7 +5,7 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import { Box, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import { DateTime } from 'luxon';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { useToggle } from 'react-use';
 
 import { type TCurrency, type TAccount, type TArchivedAccount } from '@/entites';
@@ -17,17 +17,19 @@ type TProps = {
     title: string;
     currency: TCurrency;
     archivedAccounts: TArchivedAccount[];
+    onAdd: (account: TAccount) => void;
+    onRemove: (account: TAccount) => void;
 };
 
 const AccountsGroupedByCurrency = (props: TProps) => {
     const [isArchiving, toggleArchive] = useToggle(false);
-    const { control } = useFormContext<THistoryItemForm>();
-    const acc = useFieldArray({
-        name: `accounts.${props.currency.isoCode}`,
-        control,
-    });
+    const { control, getValues } = useFormContext<THistoryItemForm>();
 
-    const currentAccounts = new Set(acc.fields.map(({ account }) => account.id));
+    useWatch({ control, name: `accounts.${props.currency.isoCode}` });
+
+    const accounts = getValues(`accounts.${props.currency.isoCode}`) ?? [];
+
+    const currentAccounts = new Set(accounts.map(({ account }) => account.id));
     const archive = props.archivedAccounts.reduce(
         (res, state) => {
             if (currentAccounts.has(state.account.id)) {
@@ -61,10 +63,10 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                     {isArchiving ? <CloseIcon /> : <EditIcon />}
                 </IconButton>
             </Stack>
-            {!!acc.fields.length && (
+            {!!accounts.length && (
                 <List>
-                    {acc.fields.map((state, index) => (
-                        <ListItem key={state.id}>
+                    {accounts.map((state, index) => (
+                        <ListItem key={state.account.id}>
                             <Stack
                                 direction='row'
                                 sx={{ width: '100%' }}
@@ -83,7 +85,12 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                 {isArchiving && (
                                     <IconButton
                                         aria-label='archive'
-                                        onClick={() => acc.remove(index)}
+                                        onClick={() => {
+                                            const accountState = accounts[index];
+                                            if (accountState) {
+                                                props.onRemove(accountState.account);
+                                            }
+                                        }}
                                     >
                                         {archive.used.has(state.account.id) ? <ArchiveIcon /> : <HighlightOffIcon />}
                                     </IconButton>
@@ -102,12 +109,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                 <IconButton
                                     edge='end'
                                     aria-label='unarchive'
-                                    onClick={() => {
-                                        acc.append({
-                                            account,
-                                            formula: '',
-                                        });
-                                    }}
+                                    onClick={() => props.onAdd(account)}
                                 >
                                     <UnarchiveIcon />
                                 </IconButton>

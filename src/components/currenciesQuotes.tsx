@@ -1,28 +1,13 @@
 import { Stack, Typography } from '@mui/material';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { type TCurrency } from '@/entites';
-import { isNonEmpty } from '@/utils/array';
-
 import ExpressionInput from './expressionInput';
 import { type THistoryItemForm } from './form';
-import { requiredCurrencies } from './hooks';
 
 const CurrenciesQuotes = () => {
     const form = useFormContext<THistoryItemForm>();
-    useWatch({ control: form.control });
-    const uniqueCurrency = new Set(requiredCurrencies.map((c) => c.isoCode));
 
-    const currencies = Object.values(form.getValues('accounts')).reduce<TCurrency[]>(
-        (res, states) => {
-            if (isNonEmpty(states) && !uniqueCurrency.has(states[0].account.currency.isoCode)) {
-                res.push(states[0].account.currency);
-            }
-            return res;
-        },
-        [...requiredCurrencies],
-    );
-
+    useWatch({ control: form.control, name: 'quotes' });
     return (
         <Stack spacing={2}>
             <Typography
@@ -31,7 +16,7 @@ const CurrenciesQuotes = () => {
             >
                 Currency quotes
             </Typography>
-            {currencies.map((currency, index) => (
+            {form.getValues('quotes').map(({ currency }, index) => (
                 <ExpressionInput
                     key={currency.isoCode}
                     name={`quotes.${index}.formula`}

@@ -13,14 +13,28 @@ import AddCurrencyModal from '@/components/addCurrencyModal';
 import CurrenciesQuotes from '@/components/currenciesQuotes';
 import {
     historyItemFormSchema,
-    type TAccountState,
+    type TCurrencyQuoteByFormula,
     type TAccountStateByCurrency,
     type THistoryItemForm,
 } from '@/components/form';
-import { useCurrencies } from '@/components/hooks';
-import { currenciesOfAccounts } from '@/components/utils';
-import { type TCurrency, type TRawAccountDetails } from '@/entites';
+import { requiredCurrencies, useCurrencies } from '@/components/hooks';
+import { currenciesOfAccounts, uniqueCurrencies } from '@/components/utils';
+import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
+
+const buildCurrencyQuotes = (
+    accounts: TAccountStateByCurrency,
+    previous: TCurrencyQuoteByFormula[] = [],
+): TCurrencyQuoteByFormula[] => {
+    const mm = new Map<TCurrencyQuoteByFormula['currency']['isoCode'], TCurrencyQuoteByFormula['formula']>(
+        previous.map(({ currency: { isoCode }, formula }) => [isoCode, formula]),
+    );
+
+    return uniqueCurrencies(requiredCurrencies, currenciesOfAccounts(accounts)).map((currency) => ({
+        currency,
+        formula: mm.get(currency.isoCode) ?? '',
+    }));
+};
 
 const TestPage: NextPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
@@ -40,11 +54,9 @@ const TestPage: NextPage = () => {
             {},
         );
 
-        const quotes = currenciesOfAccounts(accounts).map((currency) => ({ currency, formula: '' }));
-
         return {
             accounts,
-            quotes,
+            quotes: buildCurrencyQuotes(accounts),
         };
     }, [accountsOfLastRecord]);
 
@@ -53,6 +65,7 @@ const TestPage: NextPage = () => {
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
+    console.log(form.formState.isValid, form.formState.errors, form.getValues());
 
     const _handleSubmit = () => {
         void 0;
@@ -64,23 +77,47 @@ const TestPage: NextPage = () => {
     );
 
     const handleAccountAdd = useCallback(
-        (rawAccount: TRawAccountDetails) => {
-            toggleNewAccountModal();
-            const accountState: TAccountState = {
-                account: {
-                    ...rawAccount,
-                    id: rawAccount.title,
-                    createdAt: new Date(),
-                },
+        (account: TAccount) => {
+            const accountState = {
+                account,
                 formula: '',
             };
-            const currencyIsoCode = rawAccount.currency.isoCode;
+            const currencyIsoCode = account.currency.isoCode;
 
-            const states = form.getValues('accounts')[currencyIsoCode] ?? [];
+            const states = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
             states.push(accountState);
             form.setValue(`accounts.${currencyIsoCode}`, states);
+
+            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
         },
-        [form, toggleNewAccountModal],
+        [form],
+    );
+
+    const handleAccountRemove = useCallback(
+        (account: TAccount) => {
+            const isoCode = account.currency.isoCode;
+            const states = form.getValues(`accounts.${isoCode}`) ?? [];
+
+            form.setValue(
+                `accounts.${isoCode}`,
+                states.filter((curr) => curr.account.id !== account.id),
+            );
+
+            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
+        },
+        [form],
+    );
+
+    const handleRawAccountAdd = useCallback(
+        (rawAccount: TRawAccountDetails) => {
+            toggleNewAccountModal();
+            handleAccountAdd({
+                ...rawAccount,
+                id: rawAccount.title,
+                createdAt: new Date(),
+            });
+        },
+        [handleAccountAdd, toggleNewAccountModal],
     );
 
     const handleCurrencyAdd = useCallback(
@@ -126,6 +163,8 @@ const TestPage: NextPage = () => {
                                         title={`Accounts in ${isoCode}`}
                                         currency={{ isoCode }}
                                         archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
+                                        onAdd={handleAccountAdd}
+                                        onRemove={handleAccountRemove}
                                     />
                                 ))}
                             </Stack>
@@ -160,7 +199,7 @@ const TestPage: NextPage = () => {
                 currencies={currentCurrencies}
                 open={openNewAccountModal}
                 onCancel={toggleNewAccountModal}
-                onSuccess={handleAccountAdd}
+                onSuccess={handleRawAccountAdd}
             />
 
             <AddCurrencyModal

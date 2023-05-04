@@ -11,19 +11,21 @@ const ZAccountState = z.object({
 });
 export type TAccountState = z.infer<typeof ZAccountState>;
 
+const ZCurrencyQuoteFormula = z.object({
+    currency: ZCurrency,
+    formula: ZFormula.refine((value) => {
+        const res = safeEvaluate(value);
+        return undefined === res || 0 < res;
+    }, 'Must be above 0'),
+});
+
+export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
+
 export const historyItemFormSchema = z.object({
     accounts: z
         .record(ZCurrencyISOCode, z.array(ZAccountState))
         .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
-    quotes: z.array(
-        z.object({
-            currency: ZCurrency,
-            formula: ZFormula.refine((value) => {
-                const res = safeEvaluate(value);
-                return undefined === res || 0 < res;
-            }, 'Must be above 0'),
-        }),
-    ),
+    quotes: z.array(ZCurrencyQuoteFormula),
 });
 
 export type THistoryItemForm = z.infer<typeof historyItemFormSchema>;
