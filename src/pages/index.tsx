@@ -65,7 +65,6 @@ const TestPage: NextPage = () => {
         resolver: zodResolver(historyItemFormSchema),
         mode: 'all',
     });
-    console.log(form.formState.isValid, form.formState.errors, form.getValues());
 
     const _handleSubmit = () => {
         void 0;
