@@ -1,8 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { DateTime } from 'luxon';
 
 import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
 import { type TRootState } from '@/store';
+import { now } from '@/utils/time';
 
 const initialState: TBuh = {
     history: [],
@@ -18,7 +20,7 @@ const slice = createSlice({
             state.history.push({
                 ...action.payload,
 
-                createdAt: new Date(),
+                createdAt: now(),
             });
         },
     },
@@ -27,12 +29,12 @@ const slice = createSlice({
 export const actions = slice.actions;
 
 const compareDateTime =
-    <T>(getDateTime: (_: T) => Date, desc = true) =>
+    <T>(getDateTime: (_: T) => DateTime, desc = true) =>
     (a: T, b: T): number => {
         const _a = getDateTime(a);
         const _b = getDateTime(b);
 
-        if (_a.getTime() === _b.getTime()) return 0;
+        if (_a.equals(_b)) return 0;
 
         return (_a < _b ? 1 : -1) * (desc ? 1 : -1);
     };
@@ -42,7 +44,7 @@ const chronology = (_state: TRootState): THistoryItem[] => {
 
     const history = [...state.history];
 
-    history.sort(compareDateTime((item) => item.createdAt));
+    history.sort(compareDateTime((item) => DateTime.fromISO(item.createdAt)));
 
     return history;
 };
@@ -118,7 +120,7 @@ export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState
 
     sortMapValues(
         res,
-        compareDateTime((account: TArchivedAccount) => account.archivedAt),
+        compareDateTime((account: TArchivedAccount) => DateTime.fromISO(account.archivedAt)),
     );
 
     return res;

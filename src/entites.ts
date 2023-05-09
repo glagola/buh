@@ -27,13 +27,13 @@ export const ZAccount = z.object({
     title: z.string(),
     currency: ZCurrency,
     id: z.string(),
-    createdAt: z.date(),
+    createdAt: z.string().datetime(),
 });
 export type TAccount = z.infer<typeof ZAccount>;
 
 export const ZArchivedAccount = z.object({
     account: ZAccount,
-    archivedAt: z.date(),
+    archivedAt: z.string().datetime(),
 });
 export type TArchivedAccount = z.infer<typeof ZArchivedAccount>;
 
@@ -51,7 +51,7 @@ const ZRawHistoryItem = z.object({
 export type TRawHistoryItem = z.infer<typeof ZRawHistoryItem>;
 
 export const ZHistoryItem = ZRawHistoryItem.extend({
-    createdAt: z.date(),
+    createdAt: z.string().datetime(),
 });
 export type THistoryItem = z.infer<typeof ZHistoryItem>;
 

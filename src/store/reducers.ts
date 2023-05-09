@@ -1,7 +1,7 @@
-import * as some from './history';
+import * as history from './history';
 
 const res = {
-    [some.name]: some.reducer,
+    [history.name]: history.reducer,
 };
 
 export default res;

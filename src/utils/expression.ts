@@ -7,3 +7,5 @@ export const safeEvaluate = (expr: string): number | undefined => {
         return undefined;
     }
 };
+
+export const evaluateForSure = (expr: string): number => evaluate(expr) as number;

@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
@@ -20,6 +20,9 @@ import { requiredCurrencies, useCurrencies } from '@/components/hooks';
 import { currenciesOfAccounts, uniqueCurrencies } from '@/components/utils';
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
+import { actions } from '@/store/history';
+import { evaluateForSure } from '@/utils/expression';
+import { now } from '@/utils/time';
 
 const buildCurrencyQuotes = (
     accounts: TAccountStateByCurrency,
@@ -66,13 +69,31 @@ const Page = () => {
         mode: 'all',
     });
 
-    const _handleSubmit = () => {
-        void 0;
-    };
+    console.log({ valid: form.formState.isValid, errors: form.formState.errors });
+
+    const dispatch = useDispatch();
+    const _handleSubmit = useCallback(
+        (data: THistoryItemForm): void => {
+            const accounts = Object.values(data.accounts)
+                .flat(1)
+                .map(({ account, formula }) => ({
+                    value: evaluateForSure(formula),
+                    account,
+                }));
+
+            const quotes = data.quotes.map(({ formula, currency }) => ({
+                currency,
+                quote: evaluateForSure(formula),
+            }));
+
+            dispatch(actions.storeHistoryItem({ accounts, quotes }));
+        },
+        [dispatch],
+    );
 
     const handleSubmit = useCallback(
         (e: FormEvent<HTMLFormElement>) => void form.handleSubmit(_handleSubmit)(e),
-        [form],
+        [_handleSubmit, form],
     );
 
     const handleAccountAdd = useCallback(
@@ -113,7 +134,7 @@ const Page = () => {
             handleAccountAdd({
                 ...rawAccount,
                 id: rawAccount.title,
-                createdAt: new Date(),
+                createdAt: now(),
             });
         },
         [handleAccountAdd, toggleNewAccountModal],
