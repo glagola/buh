@@ -39,7 +39,7 @@ const buildCurrencyQuotes = (
     }));
 };
 
-const Page = () => {
+const CreateRecordPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
@@ -231,4 +231,4 @@ const Page = () => {
     );
 };
 
-export default Page;
+export default CreateRecordPage;

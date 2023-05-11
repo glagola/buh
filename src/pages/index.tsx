@@ -1,7 +1,7 @@
 import { type NextPage } from 'next';
 
-import Page from '@/components/page-create-record';
+import CreateRecordPage from '@/components/page-create-record';
 
-const TestPage: NextPage = () => <Page />;
+const TestPage: NextPage = () => <CreateRecordPage />;
 
 export default TestPage;
