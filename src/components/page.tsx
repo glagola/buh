@@ -69,8 +69,6 @@ const Page = () => {
         mode: 'all',
     });
 
-    console.log({ valid: form.formState.isValid, errors: form.formState.errors });
-
     const dispatch = useDispatch();
     const _handleSubmit = useCallback(
         (data: THistoryItemForm): void => {
@@ -85,7 +83,7 @@ const Page = () => {
                 currency,
                 quote: evaluateForSure(formula),
             }));
-
+            
             dispatch(actions.storeHistoryItem({ accounts, quotes }));
         },
         [dispatch],
