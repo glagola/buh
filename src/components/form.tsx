@@ -9,7 +9,6 @@ const ZAccountState = z.object({
     account: ZAccount,
     formula: ZFormula,
 });
-export type TAccountState = z.infer<typeof ZAccountState>;
 
 const ZCurrencyQuoteFormula = z.object({
     currency: ZCurrency,
@@ -19,14 +18,17 @@ const ZCurrencyQuoteFormula = z.object({
     }, 'Must be above 0'),
 });
 
-export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
-
 export const historyItemFormSchema = z.object({
     accounts: z
         .record(ZCurrencyISOCode, z.array(ZAccountState))
         .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
     quotes: z.array(ZCurrencyQuoteFormula),
 });
+
+
+type TAccountState = z.infer<typeof ZAccountState>;
+
+export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
 
 export type THistoryItemForm = z.infer<typeof historyItemFormSchema>;
 
