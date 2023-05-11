@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
-import AddAccountModal from '@/components/addAccountModal';
-import AddCurrencyModal from '@/components/addCurrencyModal';
+import AddAccountModal from '@/components/page-create-record/modal/addAccountModal';
+import AddCurrencyModal from '@/components/page-create-record/modal/addCurrencyModal';
 import CurrenciesQuotes from '@/components/currenciesQuotes';
 import {
     historyItemFormSchema,
