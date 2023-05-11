@@ -118,7 +118,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                             <ListItemText
                                 primary={`${account.title}, ${
                                     account.currency.isoCode
-                                } - Last used at ${DateTime.fromJSDate(archivedAt).toLocaleString()}`}
+                                } - Last used at ${DateTime.fromISO(archivedAt).toLocaleString()}`}
                             />
                         </ListItem>
                     ))}
