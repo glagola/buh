@@ -11,7 +11,7 @@ import { useToggle } from 'react-use';
 import { type TCurrency, type TAccount, type TArchivedAccount } from '@/entites';
 
 import ExpressionInput from './expressionInput';
-import { type THistoryItemForm } from './form';
+import { type THistoryItemForm } from './page-create-record/validation';
 
 type TProps = {
     title: string;

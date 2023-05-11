@@ -7,22 +7,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import AccountsGroupedByCurrency from '@/components/accountsGroupedByCurrency';
+import CurrenciesQuotes from '@/components/currenciesQuotes';
+import { requiredCurrencies, useCurrencies } from '@/components/hooks';
 import AddAccountModal from '@/components/page-create-record/modal/addAccountModal';
 import AddCurrencyModal from '@/components/page-create-record/modal/addCurrencyModal';
-import CurrenciesQuotes from '@/components/currenciesQuotes';
-import {
-    historyItemFormSchema,
-    type TCurrencyQuoteByFormula,
-    type TAccountStateByCurrency,
-    type THistoryItemForm,
-} from '@/components/form';
-import { requiredCurrencies, useCurrencies } from '@/components/hooks';
 import { currenciesOfAccounts, uniqueCurrencies } from '@/components/utils';
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
 import { now } from '@/utils/time';
+
+import {
+    historyItemFormSchema,
+    type TCurrencyQuoteByFormula,
+    type TAccountStateByCurrency,
+    type THistoryItemForm,
+} from './validation';
 
 const buildCurrencyQuotes = (
     accounts: TAccountStateByCurrency,
@@ -83,7 +84,7 @@ const CreateRecordPage = () => {
                 currency,
                 quote: evaluateForSure(formula),
             }));
-            
+
             dispatch(actions.storeHistoryItem({ accounts, quotes }));
         },
         [dispatch],

@@ -2,7 +2,7 @@ import { Stack, Typography } from '@mui/material';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import ExpressionInput from './expressionInput';
-import { type THistoryItemForm } from './form';
+import { type THistoryItemForm } from './page-create-record/validation';
 
 const CurrenciesQuotes = () => {
     const form = useFormContext<THistoryItemForm>();

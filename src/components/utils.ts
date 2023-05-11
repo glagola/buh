@@ -1,7 +1,7 @@
 import { type TCurrency } from '@/entites';
 import { isNonEmpty } from '@/utils/array';
 
-import { type TAccountStateByCurrency } from './form';
+import { type TAccountStateByCurrency } from './page-create-record/validation';
 
 export function currenciesOfAccounts(accountsStateByCurrencyCode: TAccountStateByCurrency): TCurrency[] {
     return Object.values(accountsStateByCurrencyCode).reduce<TCurrency[]>((res, states) => {
