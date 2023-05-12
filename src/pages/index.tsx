@@ -1,7 +1,7 @@
 import { type NextPage } from 'next';
 
-import CreateRecordPage from '@/components/page-create-record';
+import HistoryPage from '@/components/page-history';
 
-const TestPage: NextPage = () => <CreateRecordPage />;
+const TestPage: NextPage = () => <HistoryPage />;
 
 export default TestPage;
