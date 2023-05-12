@@ -5,7 +5,7 @@ import { safeEvaluate } from '@/utils/expression';
 
 const ZFormula = z.string().refine((value) => undefined !== safeEvaluate(value), 'Must be valid math expression');
 
-const ZAccountState = z.object({
+const ZAccountBalance = z.object({
     account: ZAccount,
     formula: ZFormula,
 });
@@ -20,16 +20,15 @@ const ZCurrencyQuoteFormula = z.object({
 
 export const historyItemFormSchema = z.object({
     accounts: z
-        .record(ZCurrencyISOCode, z.array(ZAccountState))
+        .record(ZCurrencyISOCode, z.array(ZAccountBalance))
         .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
     quotes: z.array(ZCurrencyQuoteFormula),
 });
 
-
-type TAccountState = z.infer<typeof ZAccountState>;
+type TAccountBalance = z.infer<typeof ZAccountBalance>;
 
 export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
 
 export type THistoryItemForm = z.infer<typeof historyItemFormSchema>;
 
-export type TAccountStateByCurrency = Record<TCurrency['isoCode'], TAccountState[]>;
+export type TAccountBalanceByCurrency = Record<TCurrency['isoCode'], TAccountBalance[]>;

@@ -31,11 +31,11 @@ const AccountsGroupedByCurrency = (props: TProps) => {
 
     const currentAccounts = new Set(accounts.map(({ account }) => account.id));
     const archive = props.archivedAccounts.reduce(
-        (res, state) => {
-            if (currentAccounts.has(state.account.id)) {
-                res.used.add(state.account.id);
+        (res, accountBalance) => {
+            if (currentAccounts.has(accountBalance.account.id)) {
+                res.used.add(accountBalance.account.id);
             } else {
-                res.rest.add(state);
+                res.rest.add(accountBalance);
             }
 
             return res;
@@ -65,8 +65,8 @@ const AccountsGroupedByCurrency = (props: TProps) => {
             </Stack>
             {!!accounts.length && (
                 <List>
-                    {accounts.map((state, index) => (
-                        <ListItem key={state.account.id}>
+                    {accounts.map((accountBalance, index) => (
+                        <ListItem key={accountBalance.account.id}>
                             <Stack
                                 direction='row'
                                 sx={{ width: '100%' }}
@@ -75,24 +75,24 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                             >
                                 <ListItemText
                                     sx={{ flexShrink: 0 }}
-                                    primary={`${state.account.title}, ${state.account.currency.isoCode}`}
+                                    primary={`${accountBalance.account.title}, ${accountBalance.account.currency.isoCode}`}
                                 />
                                 <ExpressionInput
                                     control={control}
-                                    name={`accounts.${state.account.currency.isoCode}.${index}.formula`}
+                                    name={`accounts.${accountBalance.account.currency.isoCode}.${index}.formula`}
                                 />
 
                                 {isArchiving && (
                                     <IconButton
                                         aria-label='archive'
                                         onClick={() => {
-                                            const accountState = accounts[index];
-                                            if (accountState) {
-                                                props.onRemove(accountState.account);
+                                            const accountBalance = accounts[index];
+                                            if (accountBalance) {
+                                                props.onRemove(accountBalance.account);
                                             }
                                         }}
                                     >
-                                        {archive.used.has(state.account.id) ? <ArchiveIcon /> : <HighlightOffIcon />}
+                                        {archive.used.has(accountBalance.account.id) ? <ArchiveIcon /> : <HighlightOffIcon />}
                                     </IconButton>
                                 )}
                             </Stack>

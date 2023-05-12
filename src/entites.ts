@@ -37,14 +37,14 @@ export const ZArchivedAccount = z.object({
 });
 export type TArchivedAccount = z.infer<typeof ZArchivedAccount>;
 
-export const ZAccountHistoryState = z.object({
+export const ZAccountHistoryBalance = z.object({
     account: ZAccount,
-    value: z.number(),
+    balance: z.number(),
 });
-export type TAccountHistoryState = z.infer<typeof ZAccountHistoryState>;
+export type TAccountHistoryState = z.infer<typeof ZAccountHistoryBalance>;
 
 const ZRawHistoryItem = z.object({
-    accounts: z.array(ZAccountHistoryState),
+    accountBalances: z.array(ZAccountHistoryBalance),
     quotes: z.array(ZCurrencyQuote),
 });
 

@@ -3,12 +3,12 @@ import _ from 'lodash';
 import { type TCurrency } from '@/entites';
 import { isNonEmpty } from '@/utils/array';
 
-import { type TAccountStateByCurrency } from './validation';
+import { type TAccountBalanceByCurrency } from './validation';
 
-export function currenciesOfAccounts(accountsStateByCurrencyCode: TAccountStateByCurrency): TCurrency[] {
-    return Object.values(accountsStateByCurrencyCode).reduce<TCurrency[]>((res, states) => {
-        if (isNonEmpty(states)) {
-            res.push(states[0].account.currency);
+export function currenciesOfAccounts(accountsBalancesByCurrency: TAccountBalanceByCurrency): TCurrency[] {
+    return Object.values(accountsBalancesByCurrency).reduce<TCurrency[]>((res, balances) => {
+        if (isNonEmpty(balances)) {
+            res.push(balances[0].account.currency);
         }
         return res;
     }, []);

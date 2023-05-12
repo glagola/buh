@@ -53,7 +53,7 @@ const chronology = (_state: TRootState): THistoryItem[] => {
 export const getRecentlyUsedAccounts = (_state: TRootState): TAccount[] => {
     const history = chronology(_state);
 
-    return (history[0]?.accounts ?? []).map((accountState) => accountState.account);
+    return (history[0]?.accountBalances ?? []).map((accountBalance) => accountBalance.account);
 };
 
 const sortMapValues = <K, V>(map: Map<K, V[]>, comparator: (a: V, b: V) => number): void => {
@@ -72,19 +72,19 @@ const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
 
 export const getPreviouslyUsedCurrencies = (state: TRootState): TCurrency[] => {
     const usedCurrencies = state.buh.history
-        .map((hItem) => hItem.accounts)
+        .map((hItem) => hItem.accountBalances)
         .flat(1)
-        .map((accState) => accState.account.currency);
+        .map((accountBalance) => accountBalance.account.currency);
 
     return _.uniqBy(usedCurrencies, (c) => c.isoCode);
 };
 
-export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState): Map<string, TArchivedAccount[]> => {
+export const getArchivedAccountsGroupByCurrency = (_state: TRootState): Map<string, TArchivedAccount[]> => {
     const history = chronology(_state);
     const archivedAccounts = new Map<string, TArchivedAccount>();
 
     for (const item of history) {
-        for (const { account } of item.accounts) {
+        for (const { account } of item.accountBalances) {
             const acc = archivedAccounts.get(account.id);
 
             if (!acc || acc.archivedAt < item.createdAt) {

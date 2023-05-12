@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
-import { archivedAccountsGroupByCurrencyAndSortByUsage, getRecentlyUsedAccounts } from '@/store/history';
+import { getArchivedAccountsGroupByCurrency, getRecentlyUsedAccounts } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
 import { now } from '@/utils/time';
@@ -22,12 +22,12 @@ import { currenciesOfAccounts, uniqueCurrencies } from './utils';
 import {
     historyItemFormSchema,
     type TCurrencyQuoteByFormula,
-    type TAccountStateByCurrency,
+    type TAccountBalanceByCurrency,
     type THistoryItemForm,
 } from './validation';
 
 const buildCurrencyQuotes = (
-    accounts: TAccountStateByCurrency,
+    accounts: TAccountBalanceByCurrency,
     previous: TCurrencyQuoteByFormula[] = [],
 ): TCurrencyQuoteByFormula[] => {
     const formulaByCurrencyISOCode = new Map<
@@ -46,7 +46,7 @@ const CreateRecordPage = () => {
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
     const recentlyUsedAccounts = useSelector(getRecentlyUsedAccounts);
-    const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
+    const archivedAccontsByCurrency = useSelector(getArchivedAccountsGroupByCurrency);
 
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
 
@@ -83,7 +83,7 @@ const CreateRecordPage = () => {
                 quote: evaluateForSure(formula),
             }));
 
-            dispatch(actions.storeHistoryItem({ accounts, quotes }));
+            dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
         },
         [dispatch],
     );
@@ -95,15 +95,15 @@ const CreateRecordPage = () => {
 
     const handleAccountAdd = useCallback(
         (account: TAccount) => {
-            const accountState = {
+            const accountBalance = {
                 account,
                 formula: '',
             };
             const currencyIsoCode = account.currency.isoCode;
 
-            const states = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
-            states.push(accountState);
-            form.setValue(`accounts.${currencyIsoCode}`, states);
+            const balances = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
+            balances.push(accountBalance);
+            form.setValue(`accounts.${currencyIsoCode}`, balances);
 
             form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
         },
@@ -113,11 +113,11 @@ const CreateRecordPage = () => {
     const handleAccountRemove = useCallback(
         (account: TAccount) => {
             const isoCode = account.currency.isoCode;
-            const states = form.getValues(`accounts.${isoCode}`) ?? [];
+            const balances = form.getValues(`accounts.${isoCode}`) ?? [];
 
             form.setValue(
                 `accounts.${isoCode}`,
-                states.filter((curr) => curr.account.id !== account.id),
+                balances.filter((accountBalance) => accountBalance.account.id !== account.id),
             );
 
             form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
