@@ -2,11 +2,11 @@ import { type Dispatch, type SetStateAction, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { type TCurrency } from '@/entites';
-import { currencies } from '@/store/history';
+import { getPreviouslyUsedCurrencies } from '@/store/history';
 
 export const requiredCurrencies: TCurrency[] = [{ isoCode: 'USD' }, { isoCode: 'RUB' }];
 export const useCurrencies = () => {
-    const fromHistory = useSelector(currencies);
+    const fromHistory = useSelector(getPreviouslyUsedCurrencies);
 
     const [current, setCurrent] = useState<TCurrency[]>([]);
 

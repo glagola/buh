@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import _ from 'lodash';
 import { DateTime } from 'luxon';
 
 import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
@@ -69,17 +70,13 @@ const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
         return res.set(key, items);
     }, new Map<U, T[]>());
 
-export const currencies = (_state: TRootState): TCurrency[] => {
-    const state = _state.buh;
-    const currenciesByIsoCode = new Map<TCurrency['isoCode'], TCurrency>();
+export const getPreviouslyUsedCurrencies = (state: TRootState): TCurrency[] => {
+    const usedCurrencies = state.buh.history
+        .map((hItem) => hItem.accounts)
+        .flat(1)
+        .map((accState) => accState.account.currency);
 
-    for (const item of state.history) {
-        for (const accountState of item.accounts) {
-            currenciesByIsoCode.set(accountState.account.currency.isoCode, accountState.account.currency);
-        }
-    }
-
-    return [...currenciesByIsoCode.values()];
+    return _.uniqBy(usedCurrencies, (c) => c.isoCode);
 };
 
 export const archivedAccountsGroupByCurrencyAndSortByUsage = (_state: TRootState): Map<string, TArchivedAccount[]> => {
