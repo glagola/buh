@@ -6,7 +6,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
-import { requiredCurrencies, useCurrencies } from '@/components/hooks';
 import AddAccountModal from '@/components/page-create-record/modal/addAccountModal';
 import AddCurrencyModal from '@/components/page-create-record/modal/addCurrencyModal';
 import { currenciesOfAccounts, uniqueCurrencies } from '@/components/utils';
@@ -18,6 +17,7 @@ import { now } from '@/utils/time';
 
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
+import { requiredCurrencies, useCurrencies } from './hooks';
 import {
     historyItemFormSchema,
     type TCurrencyQuoteByFormula,
