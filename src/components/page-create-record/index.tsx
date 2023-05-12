@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
+import _ from 'lodash';
 import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
-import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
+import { archivedAccountsGroupByCurrencyAndSortByUsage, getRecentlyUsedAccounts } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
 import { now } from '@/utils/time';
@@ -44,25 +45,22 @@ const CreateRecordPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
-    const accountsOfLastRecord = useSelector(recentlyUsedAccountsGroupByCurrency);
+    const recentlyUsedAccounts = useSelector(getRecentlyUsedAccounts);
     const archivedAccontsByCurrency = useSelector(archivedAccountsGroupByCurrencyAndSortByUsage);
 
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
 
     const defaultValues = useMemo(() => {
-        const accounts = [...accountsOfLastRecord.entries()].reduce<TAccountStateByCurrency>(
-            (res, [currency, accounts]) => {
-                res[currency.isoCode] = accounts.map((account) => ({ account, formula: '' }));
-                return res;
-            },
-            {},
+        const accounts = _.groupBy(
+            recentlyUsedAccounts.map((account) => ({ account, formula: '' })),
+            (s) => s.account.currency.isoCode,
         );
 
         return {
             accounts,
             quotes: buildCurrencyQuotes(accounts),
         };
-    }, [accountsOfLastRecord]);
+    }, [recentlyUsedAccounts]);
 
     const form = useForm<THistoryItemForm>({
         defaultValues,

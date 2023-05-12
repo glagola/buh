@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash';
+import _ from 'lodash';
 
 import { type TCurrency } from '@/entites';
 import { isNonEmpty } from '@/utils/array';
@@ -15,4 +15,4 @@ export function currenciesOfAccounts(accountsStateByCurrencyCode: TAccountStateB
 }
 
 export const uniqueCurrencies = (...sources: TCurrency[][]): TCurrency[] =>
-    uniqBy(sources.flat(1), ({ isoCode }) => isoCode);
+    _.uniqBy(sources.flat(1), ({ isoCode }) => isoCode);

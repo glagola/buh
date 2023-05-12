@@ -49,7 +49,7 @@ const chronology = (_state: TRootState): THistoryItem[] => {
     return history;
 };
 
-const recentlyUsedAccounts = (_state: TRootState): TAccount[] => {
+export const getRecentlyUsedAccounts = (_state: TRootState): TAccount[] => {
     const history = chronology(_state);
 
     return (history[0]?.accounts ?? []).map((accountState) => accountState.account);
@@ -68,20 +68,6 @@ const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
         items.push(item);
         return res.set(key, items);
     }, new Map<U, T[]>());
-
-export const recentlyUsedAccountsGroupByCurrency = (_state: TRootState): Map<TCurrency, TAccount[]> => {
-    const recentlyAccounts = recentlyUsedAccounts(_state);
-
-    const res = groupBy(recentlyAccounts, (account: TAccount) => account.currency);
-
-    sortMapValues(res, (a, b) => {
-        if (a.title === b.title) return 0;
-
-        return a.title < b.title ? 1 : -1;
-    });
-
-    return res;
-};
 
 export const currencies = (_state: TRootState): TCurrency[] => {
     const state = _state.buh;
