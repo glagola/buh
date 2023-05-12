@@ -1,3 +1,5 @@
+import { uniqBy } from 'lodash';
+
 import { type TCurrency } from '@/entites';
 import { isNonEmpty } from '@/utils/array';
 
@@ -12,18 +14,5 @@ export function currenciesOfAccounts(accountsStateByCurrencyCode: TAccountStateB
     }, []);
 }
 
-export const uniqueCurrencies = (...sources: TCurrency[][]): TCurrency[] => {
-    const set = new Set<TCurrency['isoCode']>();
-    const res: TCurrency[] = [];
-
-    for (const source of sources) {
-        for (const currency of source) {
-            if (set.has(currency.isoCode)) continue;
-
-            set.add(currency.isoCode);
-            res.push(currency);
-        }
-    }
-
-    return res;
-};
+export const uniqueCurrencies = (...sources: TCurrency[][]): TCurrency[] =>
+    uniqBy(sources.flat(1), ({ isoCode }) => isoCode);
