@@ -10,7 +10,7 @@ import { useToggle } from 'react-use';
 
 import { type TCurrency, type TAccount, type TArchivedAccount } from '@/entites';
 
-import ExpressionInput from '../expressionInput';
+import ExpressionInput from './expression-input';
 import { type THistoryItemForm } from './validation';
 
 type TProps = {
