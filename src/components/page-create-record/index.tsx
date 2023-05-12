@@ -8,7 +8,6 @@ import { useToggle } from 'react-use';
 
 import AddAccountModal from '@/components/page-create-record/modal/addAccountModal';
 import AddCurrencyModal from '@/components/page-create-record/modal/addCurrencyModal';
-import { currenciesOfAccounts, uniqueCurrencies } from '@/components/utils';
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { archivedAccountsGroupByCurrencyAndSortByUsage, recentlyUsedAccountsGroupByCurrency } from '@/store/history';
 import { actions } from '@/store/history';
@@ -18,6 +17,7 @@ import { now } from '@/utils/time';
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
 import { requiredCurrencies, useCurrencies } from './hooks';
+import { currenciesOfAccounts, uniqueCurrencies } from './utils';
 import {
     historyItemFormSchema,
     type TCurrencyQuoteByFormula,
