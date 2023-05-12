@@ -74,8 +74,8 @@ const CreateRecordPage = () => {
             const accounts = Object.values(data.accounts)
                 .flat(1)
                 .map(({ account, formula }) => ({
-                    value: evaluateForSure(formula),
                     account,
+                    balance: evaluateForSure(formula),
                 }));
 
             const quotes = data.quotes.map(({ formula, currency }) => ({
