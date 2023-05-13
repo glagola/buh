@@ -10,7 +10,7 @@ import { prepareRows } from './store-selectors';
 import { type TRow, type TMoney } from './types';
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
-const valueFormatter = (params: GridValueFormatterParams<TMoney['amount'] | undefined>) => `${params.value ?? ''}`;
+const valueFormatter = (params: GridValueFormatterParams<TMoney['amount'] | undefined>) => `${params.value ?? ''}`; // TODO proper sum formatting
 
 const columns: GridColDef<TRow>[] = [
     {
