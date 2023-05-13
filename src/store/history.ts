@@ -40,7 +40,7 @@ const compareDateTime =
         return (_a < _b ? 1 : -1) * (desc ? 1 : -1);
     };
 
-const chronology = (_state: TRootState): THistoryItem[] => {
+export const chronology = (_state: TRootState): THistoryItem[] => {
     const state = _state.buh;
 
     const history = [...state.history];
