@@ -20,7 +20,7 @@ const buildConverter = (quotes: TCurrencyQuote[]) => {
             throw new Error(`No way to convert from ${from.isoCode} to ${to.isoCode}`);
         }
 
-        return sum / (fromRate * toRate);
+        return (sum * fromRate) / toRate;
     };
 };
 
@@ -54,17 +54,19 @@ export const prepareRows = (state: TRootState): TRow[] => {
         }
 
         return {
+            id: hItem.createdAt,
+
             totalInTargetCurrency: {
                 currency: targetCurrency,
-                value: totalInTargetCurrency,
+                amount: totalInTargetCurrency,
             },
             totalOfAccountsInTargetCurrency: {
                 currency: targetCurrency,
-                value: totalOfAccountsInTargetCurrency,
+                amount: totalOfAccountsInTargetCurrency,
             },
             totalOfAccountsInOtherCurrenciesInMajorCurrency: {
                 currency: majorCurrency,
-                value: totalOfAccountsInOtherCurrenciesInMajorCurrency,
+                amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
             },
             createdAt: DateTime.fromISO(hItem.createdAt),
         };

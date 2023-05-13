@@ -1,10 +1,10 @@
 import { type DateTime } from 'luxon';
 
-import { type TCurrency } from '@/entites';
+import { type TAccount } from '@/entites';
 
-type TMoney = {
-    currency: TCurrency;
-    value: number;
+export type TMoney = {
+    currency: TAccount['currency'];
+    amount: number;
 };
 
 export type TRow = {
