@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
+import NextJSLink from 'next/link';
 import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -192,7 +193,11 @@ const CreateRecordPage = () => {
                                 gap={3}
                                 justifyContent='flex-end'
                             >
-                                <Button variant='text'>
+                                <Button
+                                    variant='text'
+                                    component={NextJSLink}
+                                    href='/'
+                                >
                                     Cancel
                                     {
                                         // TODO confirmation needed

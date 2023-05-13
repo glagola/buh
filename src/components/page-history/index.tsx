@@ -1,5 +1,7 @@
-import { Container } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, Container, Stack } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import NextJSLink from 'next/link';
 import { useSelector } from 'react-redux';
 
 import { prepareRows } from './store-selectors';
@@ -14,11 +16,28 @@ const HistoryPage = () => {
     const rows = useSelector(prepareRows);
     return (
         <Container>
-            <DataGrid
-                autoHeight
-                rows={rows}
-                columns={columns}
-            />
+            <Stack>
+                <Stack
+                    direction='row'
+                    gap={3}
+                    justifyContent='flex-end'
+                    sx={{ mt: 3, mb: 3 }}
+                >
+                    <Button
+                        startIcon={<AddIcon />}
+                        variant='outlined'
+                        component={NextJSLink}
+                        href='/add'
+                    >
+                        Report
+                    </Button>
+                </Stack>
+                <DataGrid
+                    autoHeight
+                    rows={rows}
+                    columns={columns}
+                />
+            </Stack>
         </Container>
     );
 };
