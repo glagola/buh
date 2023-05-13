@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
 import NextJSLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,6 +71,7 @@ const CreateRecordPage = () => {
         mode: 'all',
     });
 
+    const router = useRouter();
     const dispatch = useDispatch();
     const _handleSubmit = useCallback(
         (data: THistoryItemForm): void => {
@@ -86,8 +88,9 @@ const CreateRecordPage = () => {
             }));
 
             dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
+            router.push('/');
         },
-        [dispatch],
+        [dispatch, router],
     );
 
     const handleSubmit = useCallback(
