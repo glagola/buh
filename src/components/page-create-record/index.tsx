@@ -2,12 +2,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
+import NextJSLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, type FormEvent } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
+import { requiredCurrencies } from '@/settings';
 import { getArchivedAccountsGroupByCurrency, getRecentlyUsedAccounts } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
@@ -15,7 +18,7 @@ import { now } from '@/utils/time';
 
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
-import { requiredCurrencies, useCurrencies } from './hooks';
+import { useCurrencies } from './hooks';
 import AddAccountModal from './modal/modal-add-account';
 import AddCurrencyModal from './modal/modal-add-currency';
 import { currenciesOfAccounts, uniqueCurrencies } from './utils';
@@ -68,6 +71,7 @@ const CreateRecordPage = () => {
         mode: 'all',
     });
 
+    const router = useRouter();
     const dispatch = useDispatch();
     const _handleSubmit = useCallback(
         (data: THistoryItemForm): void => {
@@ -84,8 +88,9 @@ const CreateRecordPage = () => {
             }));
 
             dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
+            router.push('/');
         },
-        [dispatch],
+        [dispatch, router],
     );
 
     const handleSubmit = useCallback(
@@ -191,7 +196,11 @@ const CreateRecordPage = () => {
                                 gap={3}
                                 justifyContent='flex-end'
                             >
-                                <Button variant='text'>
+                                <Button
+                                    variant='text'
+                                    component={NextJSLink}
+                                    href='/'
+                                >
                                     Cancel
                                     {
                                         // TODO confirmation needed
