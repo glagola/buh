@@ -2,9 +2,9 @@ import { type Dispatch, type SetStateAction, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { type TCurrency } from '@/entites';
+import { requiredCurrencies } from '@/settings';
 import { getPreviouslyUsedCurrencies } from '@/store/history';
 
-export const requiredCurrencies: TCurrency[] = [{ isoCode: 'USD' }, { isoCode: 'RUB' }];
 export const useCurrencies = () => {
     const fromHistory = useSelector(getPreviouslyUsedCurrencies);
 

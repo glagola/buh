@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
+import { requiredCurrencies } from '@/settings';
 import { getArchivedAccountsGroupByCurrency, getRecentlyUsedAccounts } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
@@ -15,7 +16,7 @@ import { now } from '@/utils/time';
 
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
-import { requiredCurrencies, useCurrencies } from './hooks';
+import { useCurrencies } from './hooks';
 import AddAccountModal from './modal/modal-add-account';
 import AddCurrencyModal from './modal/modal-add-currency';
 import { currenciesOfAccounts, uniqueCurrencies } from './utils';
