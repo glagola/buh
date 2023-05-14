@@ -6,6 +6,7 @@ import { DateTime } from 'luxon';
 import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
 import { type TRootState } from '@/store';
 import { now } from '@/utils/time';
+import { useSelector } from 'react-redux';
 
 const initialState: TBuh = {
     history: [],
@@ -110,3 +111,5 @@ export const getArchivedAccountsGroupByCurrency = (_state: TRootState): Map<stri
 };
 
 export const reducer = slice.reducer;
+
+export const useDBExport = () => useSelector((state: TRootState) => state[name]);

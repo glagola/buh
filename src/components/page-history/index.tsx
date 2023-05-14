@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { majorCurrency, targetCurrency } from '@/settings';
-import { type TRootState } from '@/store';
+import { useDBExport } from '@/store/history';
 
 import { prepareRows } from './store-selectors';
 import { type TRow, type TMoney } from './types';
@@ -47,8 +47,7 @@ const columns: GridColDef<TRow>[] = [
 
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
-
-    const buh = useSelector(({ buh }: TRootState) => buh);
+    const buh = useDBExport();
 
     const handleDownload = useCallback(() => {
         const fileData = JSON.stringify(buh);
