@@ -24,6 +24,7 @@ const buildConverter = (quotes: TCurrencyQuote[]) => {
     };
 };
 
+// TODO move to createSelector
 export const prepareRows = (state: TRootState): TRow[] => {
     const history = chronology(state);
 
