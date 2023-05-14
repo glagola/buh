@@ -1,10 +1,14 @@
 import AddIcon from '@mui/icons-material/Add';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Button, Container, Stack } from '@mui/material';
 import { DataGrid, type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
 import NextJSLink from 'next/link';
+import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { majorCurrency, targetCurrency } from '@/settings';
+import { type TRootState } from '@/store';
 
 import { prepareRows } from './store-selectors';
 import { type TRow, type TMoney } from './types';
@@ -43,6 +47,19 @@ const columns: GridColDef<TRow>[] = [
 
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
+
+    const buh = useSelector(({ buh }: TRootState) => buh);
+
+    const handleDownload = useCallback(() => {
+        const fileData = JSON.stringify(buh);
+        const blob = new Blob([fileData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'buh-history.json';
+        link.href = url;
+        link.click();
+    }, [buh]);
+
     return (
         <Container>
             <Stack>
@@ -52,6 +69,21 @@ const HistoryPage = () => {
                     justifyContent='flex-end'
                     sx={{ mt: 3, mb: 3 }}
                 >
+                    <Button
+                        startIcon={<CloudUploadIcon />}
+                        variant='outlined'
+                    >
+                        Load DB
+                    </Button>
+
+                    <Button
+                        startIcon={<CloudDownloadIcon />}
+                        variant='outlined'
+                        onClick={handleDownload}
+                    >
+                        Save DB
+                    </Button>
+
                     <Button
                         startIcon={<AddIcon />}
                         variant='outlined'
