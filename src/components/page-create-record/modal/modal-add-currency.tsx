@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { type FormEvent, type FC, useCallback, useMemo } from 'react';
+import { type FC, useCallback, useMemo } from 'react';
 import { TextFieldElement, useForm } from 'react-hook-form-mui';
 import { z } from 'zod';
 
@@ -45,11 +45,6 @@ const AddCurrencyModal: FC<TProps> = (props) => {
         },
     });
 
-    const handleSubmit = useCallback(
-        (e: FormEvent<HTMLFormElement>) => void form.handleSubmit(props.onSuccess)(e),
-        [form, props.onSuccess],
-    );
-
     const handleDialogAnimationEnd = useCallback(() => form.reset(), [form]);
 
     return (
@@ -67,7 +62,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
             >
                 Add currency
             </DialogTitle>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={form.handleSubmit(props.onSuccess)}>
                 <DialogContent>
                     <TextFieldElement
                         fullWidth

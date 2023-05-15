@@ -4,7 +4,7 @@ import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
 import NextJSLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, type FormEvent } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
@@ -73,30 +73,22 @@ const CreateRecordPage = () => {
 
     const router = useRouter();
     const dispatch = useDispatch();
-    const _handleSubmit = useCallback(
-        (data: THistoryItemForm): void => {
-            const accounts = Object.values(data.accounts)
-                .flat(1)
-                .map(({ account, formula }) => ({
-                    account,
-                    balance: evaluateForSure(formula),
-                }));
-
-            const quotes = data.quotes.map(({ formula, currency }) => ({
-                currency,
-                quote: evaluateForSure(formula),
+    const handleSubmit = (data: THistoryItemForm): void => {
+        const accounts = Object.values(data.accounts)
+            .flat(1)
+            .map(({ account, formula }) => ({
+                account,
+                balance: evaluateForSure(formula),
             }));
 
-            dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
-            router.push('/');
-        },
-        [dispatch, router],
-    );
+        const quotes = data.quotes.map(({ formula, currency }) => ({
+            currency,
+            quote: evaluateForSure(formula),
+        }));
 
-    const handleSubmit = useCallback(
-        (e: FormEvent<HTMLFormElement>) => void form.handleSubmit(_handleSubmit)(e),
-        [_handleSubmit, form],
-    );
+        dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
+        router.push('/');
+    };
 
     const handleAccountAdd = useCallback(
         (account: TAccount) => {
@@ -176,7 +168,7 @@ const CreateRecordPage = () => {
                     </Button>
                 </Stack>
                 <FormProvider {...form}>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={form.handleSubmit(handleSubmit)}>
                         <Stack spacing={3}>
                             <Stack spacing={3}>
                                 {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
