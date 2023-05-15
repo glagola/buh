@@ -1,7 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createAction, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
+import { useSelector } from 'react-redux';
 
 import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
 import { type TRootState } from '@/store';
@@ -13,11 +14,13 @@ const initialState: TBuh = {
 
 export const name = 'buh';
 
+const loadFromFile = createAction<TBuh>(`${name}/restoreFromFile`);
+
 const slice = createSlice({
     name,
     initialState,
     reducers: {
-        storeHistoryItem: (state, action: PayloadAction<TRawHistoryItem>) => {
+        storeHistoryItem(state, action: PayloadAction<TRawHistoryItem>): void {
             state.history.push({
                 ...action.payload,
 
@@ -25,9 +28,17 @@ const slice = createSlice({
             });
         },
     },
+    extraReducers: (builder) => {
+        builder.addCase(loadFromFile, (_, { payload }) => payload);
+    },
 });
 
-export const actions = slice.actions;
+export const actions = {
+    ...slice.actions,
+    loadFromFile,
+};
+
+export const reducer = slice.reducer;
 
 const compareDateTime =
     <T>(getDateTime: (_: T) => DateTime, desc = true) =>
@@ -109,4 +120,4 @@ export const getArchivedAccountsGroupByCurrency = (_state: TRootState): Map<stri
     return res;
 };
 
-export const reducer = slice.reducer;
+export const useDBExport = () => useSelector((state: TRootState) => state[name]);

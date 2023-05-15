@@ -6,6 +6,8 @@ import { useSelector } from 'react-redux';
 
 import { majorCurrency, targetCurrency } from '@/settings';
 
+import ExportDB from './db-export';
+import ImportDB from './db-import';
 import { prepareRows } from './store-selectors';
 import { type TRow, type TMoney } from './types';
 
@@ -39,10 +41,13 @@ const columns: GridColDef<TRow>[] = [
         valueGetter,
         valueFormatter,
     },
+
+    // TODO add remove record action button
 ];
 
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
+
     return (
         <Container>
             <Stack>
@@ -52,6 +57,9 @@ const HistoryPage = () => {
                     justifyContent='flex-end'
                     sx={{ mt: 3, mb: 3 }}
                 >
+                    <ImportDB />
+                    <ExportDB />
+
                     <Button
                         startIcon={<AddIcon />}
                         variant='outlined'
