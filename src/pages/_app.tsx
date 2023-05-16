@@ -3,6 +3,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import type { AppType } from 'next/app';
 import { Provider } from 'react-redux';
 
@@ -13,9 +15,11 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     return (
         <>
             <CssBaseline />
-            <Provider store={store}>
-                <Component {...pageProps} />
-            </Provider>
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+                <Provider store={store}>
+                    <Component {...pageProps} />
+                </Provider>
+            </LocalizationProvider>
         </>
     );
 };

@@ -19,6 +19,7 @@ const ZCurrencyQuoteFormula = z.object({
 });
 
 export const historyItemFormSchema = z.object({
+    createdAt: z.coerce.string().datetime({ offset: true }),
     accounts: z
         .record(ZCurrencyISOCode, z.array(ZAccountBalance))
         .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
