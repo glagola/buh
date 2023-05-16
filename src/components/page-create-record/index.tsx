@@ -6,6 +6,7 @@ import NextJSLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { DatePickerElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
@@ -86,7 +87,13 @@ const CreateRecordPage = () => {
             quote: evaluateForSure(formula),
         }));
 
-        dispatch(actions.storeHistoryItem({ accountBalances: accounts, quotes }));
+        dispatch(
+            actions.storeHistoryItem({
+                createdAt: data.createdAt,
+                accountBalances: accounts,
+                quotes,
+            }),
+        );
         router.push('/');
     };
 
@@ -170,6 +177,13 @@ const CreateRecordPage = () => {
                 <FormProvider {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)}>
                         <Stack spacing={3}>
+                            <DatePickerElement
+                                control={form.control}
+                                name='createdAt'
+                                label='Report Date'
+                                format='dd/LL/yyyy'
+                            />
+
                             <Stack spacing={3}>
                                 {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
                                     <AccountsGroupedByCurrency
@@ -201,7 +215,7 @@ const CreateRecordPage = () => {
                                 <Button
                                     variant='contained'
                                     type='submit'
-                                    disabled={!form.formState.isValid}
+                                    // disabled={!form.formState.isValid}
                                 >
                                     {
                                         // TODO confirmation needed

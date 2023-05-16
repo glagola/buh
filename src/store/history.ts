@@ -4,9 +4,8 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 
-import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount, TRawHistoryItem } from '@/entites';
+import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
 import { type TRootState } from '@/store';
-import { now } from '@/utils/time';
 
 const initialState: TBuh = {
     history: [],
@@ -20,12 +19,8 @@ const slice = createSlice({
     name,
     initialState,
     reducers: {
-        storeHistoryItem(state, action: PayloadAction<TRawHistoryItem>): void {
-            state.history.push({
-                ...action.payload,
-
-                createdAt: now(),
-            });
+        storeHistoryItem(state, action: PayloadAction<THistoryItem>): void {
+            state.history.push(action.payload);
         },
     },
     extraReducers: (builder) => {
