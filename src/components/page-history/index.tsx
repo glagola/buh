@@ -46,7 +46,7 @@ const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'deltaPerMonthAverageInTargetCurrency',
-        headerName: `AVG per month difference, ${targetCurrency.isoCode}`,
+        headerName: `AVG per month diff, ${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -93,7 +93,7 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Non ${targetCurrency.isoCode} assets, %`,
         valueFormatter: percentFormatter,
         flex: 1,
-        maxWidth: 77,
+        maxWidth: 131,
     },
 
     {
@@ -118,22 +118,6 @@ const columns: GridColDef<TRow>[] = [
 
     // TODO add remove&edit record action buttons
 ];
-
-const styles = {
-    dataGrid: {
-        '& .MuiDataGrid-columnHeaderTitle': {
-            whiteSpace: 'normal',
-            lineHeight: 'normal',
-        },
-        '& .MuiDataGrid-columnHeader': {
-            height: 'unset !important',
-            textAlign: 'center',
-        },
-        '& .MuiDataGrid-columnHeaders': {
-            maxHeight: '168px !important',
-        },
-    },
-};
 
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
@@ -164,7 +148,6 @@ const HistoryPage = () => {
                     density='compact'
                     rows={rows}
                     columns={columns}
-                    sx={styles.dataGrid}
                 />
             </Stack>
         </Container>
