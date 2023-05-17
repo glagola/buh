@@ -29,7 +29,8 @@ const columns: GridColDef<TRow>[] = [
         field: 'deltaFromPreviuosReportPercent',
         headerName: `Difference, %`,
         valueFormatter: percentFormatter,
-        width: 100,
+        flex: 1,
+        maxWidth: 100,
     },
 
     {
@@ -38,7 +39,8 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Difference, ${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 120,
+        flex: 1,
+        maxWidth: 111,
     },
 
     {
@@ -53,9 +55,10 @@ const columns: GridColDef<TRow>[] = [
     {
         field: 'createdAt',
         headerName: 'Report date',
-        headerAlign: 'center',
         valueFormatter: ({ value }: GridValueFormatterParams<TRow['createdAt']>) =>
             `${(value && value.toISODate()) ?? ''}`,
+        flex: 1,
+        maxWidth: 93,
     },
     {
         type: 'number',
@@ -63,7 +66,8 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Total, ${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 120,
+        flex: 1,
+        maxWidth: 112,
     },
     {
         type: 'number',
@@ -71,7 +75,8 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Assets, ${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 120,
+        flex: 1,
+        maxWidth: 112,
     },
     {
         type: 'number',
@@ -79,14 +84,16 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 95,
+        flex: 1,
+        maxWidth: 150,
     },
     {
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
         headerName: `Non ${targetCurrency.isoCode} assets, %`,
         valueFormatter: percentFormatter,
-        width: 80,
+        flex: 1,
+        maxWidth: 77,
     },
 
     {
@@ -95,7 +102,8 @@ const columns: GridColDef<TRow>[] = [
         headerName: `${majorCurrency.isoCode}/${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 80,
+        flex: 1,
+        maxWidth: 71,
     },
 
     {
@@ -104,11 +112,28 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Total, ${majorCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 100,
+        flex: 1,
+        maxWidth: 91,
     },
 
     // TODO add remove&edit record action buttons
 ];
+
+const styles = {
+    dataGrid: {
+        '& .MuiDataGrid-columnHeaderTitle': {
+            whiteSpace: 'normal',
+            lineHeight: 'normal',
+        },
+        '& .MuiDataGrid-columnHeader': {
+            height: 'unset !important',
+            textAlign: 'center',
+        },
+        '& .MuiDataGrid-columnHeaders': {
+            maxHeight: '168px !important',
+        },
+    },
+};
 
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
@@ -139,20 +164,7 @@ const HistoryPage = () => {
                     density='compact'
                     rows={rows}
                     columns={columns}
-                    sx={{
-                        '& .MuiDataGrid-columnHeaderTitle': {
-                            whiteSpace: 'normal',
-                            lineHeight: 'normal',
-                        },
-                        '& .MuiDataGrid-columnHeader': {
-                            // Forced to use important since overriding inline styles
-                            height: 'unset !important',
-                        },
-                        '& .MuiDataGrid-columnHeaders': {
-                            // Forced to use important since overriding inline styles
-                            maxHeight: '168px !important',
-                        },
-                    }}
+                    sx={styles.dataGrid}
                 />
             </Stack>
         </Container>
