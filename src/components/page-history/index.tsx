@@ -24,9 +24,10 @@ const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | u
 const columns: GridColDef<TRow>[] = [
     {
         field: 'createdAt',
-        headerName: 'Date',
-        valueFormatter: (params: GridValueFormatterParams<TRow['createdAt']>) => `${params.value.toLocaleString()}`,
+        headerName: 'Report date',
         headerAlign: 'center',
+        valueFormatter: ({ value }: GridValueFormatterParams<TRow['createdAt']>) =>
+            `${(value && value.toISODate()) ?? ''}`,
     },
     {
         type: 'number',
@@ -50,7 +51,7 @@ const columns: GridColDef<TRow>[] = [
         headerName: majorCurrency.isoCode,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 120,
+        width: 100,
     },
 
     // TODO add remove&edit record action buttons
