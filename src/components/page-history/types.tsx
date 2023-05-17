@@ -17,4 +17,5 @@ export type TRow = {
 
     deltaFromPreviuosReportInTargetCurrency: TMoney;
     deltaFromPreviuosReportPercent: number;
+    deltaPerMonthAverageInTargetCurrency: TMoney;
 };

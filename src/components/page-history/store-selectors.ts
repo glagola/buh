@@ -91,6 +91,11 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 amount: 0,
             },
 
+            deltaPerMonthAverageInTargetCurrency: {
+                currency: targetCurrency,
+                amount: 0,
+            },
+
             deltaFromPreviuosReportPercent: 0,
 
             createdAt: DateTime.fromISO(hItem.createdAt),
@@ -107,6 +112,11 @@ export const prepareRows = (state: TRootState): TRow[] => {
 
             current.deltaFromPreviuosReportPercent =
                 current.deltaFromPreviuosReportInTargetCurrency.amount / current.totalInTargetCurrency.amount;
+
+            current.deltaPerMonthAverageInTargetCurrency.amount =
+                (current.deltaFromPreviuosReportInTargetCurrency.amount /
+                    current.createdAt.diff(prev.createdAt).as('days')) *
+                (365 / 12);
         }
     }
 

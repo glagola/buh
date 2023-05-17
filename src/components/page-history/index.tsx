@@ -42,6 +42,15 @@ const columns: GridColDef<TRow>[] = [
     },
 
     {
+        type: 'number',
+        field: 'deltaPerMonthAverageInTargetCurrency',
+        headerName: `AVG per month difference, ${targetCurrency.isoCode}`,
+        valueGetter,
+        valueFormatter: moneyFormatter,
+        flex: 1,
+    },
+
+    {
         field: 'createdAt',
         headerName: 'Report date',
         headerAlign: 'center',
@@ -70,14 +79,14 @@ const columns: GridColDef<TRow>[] = [
         headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 150,
+        width: 95,
     },
     {
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
         headerName: `Non ${targetCurrency.isoCode} assets, %`,
         valueFormatter: percentFormatter,
-        width: 140,
+        width: 80,
     },
 
     {
@@ -86,7 +95,7 @@ const columns: GridColDef<TRow>[] = [
         headerName: `${majorCurrency.isoCode}/${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 100,
+        width: 80,
     },
 
     {
@@ -130,6 +139,20 @@ const HistoryPage = () => {
                     density='compact'
                     rows={rows}
                     columns={columns}
+                    sx={{
+                        '& .MuiDataGrid-columnHeaderTitle': {
+                            whiteSpace: 'normal',
+                            lineHeight: 'normal',
+                        },
+                        '& .MuiDataGrid-columnHeader': {
+                            // Forced to use important since overriding inline styles
+                            height: 'unset !important',
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                            // Forced to use important since overriding inline styles
+                            maxHeight: '168px !important',
+                        },
+                    }}
                 />
             </Stack>
         </Container>
