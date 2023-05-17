@@ -28,7 +28,7 @@ const buildConverter = (quotes: TCurrencyQuote[]) => {
 export const prepareRows = (state: TRootState): TRow[] => {
     const history = chronology(state);
 
-    return history.map((hItem) => {
+    const res = history.map((hItem) => {
         const exchange = buildConverter(hItem.quotes);
 
         let totalInTargetCurrency = 0;
@@ -89,7 +89,24 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 amount: totalInTargetCurrency / majorToTargetCurrencyExchangeRate,
             },
 
+            deltaFromPreviuosReportInTargetCurrency: {
+                currency: targetCurrency,
+                amount: 0,
+            },
+
             createdAt: DateTime.fromISO(hItem.createdAt),
         };
     });
+
+    for (let i = 0; i < res.length - 1; ++i) {
+        const current = res[i];
+        const prev = res[i + 1];
+
+        if (current && prev) {
+            current.deltaFromPreviuosReportInTargetCurrency.amount =
+                current.totalInTargetCurrency.amount - prev.totalInTargetCurrency.amount;
+        }
+    }
+
+    return res;
 };
