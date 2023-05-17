@@ -54,6 +54,8 @@ export const prepareRows = (state: TRootState): TRow[] => {
             }
         }
 
+        const majorToTargetCurrencyExchangeRate = exchange(1, majorCurrency, targetCurrency);
+
         return {
             id: hItem.createdAt,
 
@@ -69,7 +71,23 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 currency: majorCurrency,
                 amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
             },
-            majorToTargetCurrencyExchangeRate: exchange(1, majorCurrency, targetCurrency),
+            majorToTargetCurrencyExchangeRate: {
+                currency: targetCurrency,
+                amount: majorToTargetCurrencyExchangeRate,
+            },
+            moneyInMajorCurrencyPercent: {
+                currency: majorCurrency,
+                amount: Math.min(
+                    1,
+                    (totalOfAccountsInOtherCurrenciesInMajorCurrency * majorToTargetCurrencyExchangeRate) /
+                        totalInTargetCurrency,
+                ),
+            },
+
+            totalInMajorCurrency: {
+                currency: majorCurrency,
+                amount: totalInTargetCurrency / majorToTargetCurrencyExchangeRate,
+            },
 
             createdAt: DateTime.fromISO(hItem.createdAt),
         };

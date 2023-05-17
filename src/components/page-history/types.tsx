@@ -12,5 +12,6 @@ export type TRow = {
     totalInTargetCurrency: TMoney;
     totalOfAccountsInTargetCurrency: TMoney;
     totalOfAccountsInOtherCurrenciesInMajorCurrency: TMoney;
-    majorToTargetCurrencyExchangeRate: number;
+    majorToTargetCurrencyExchangeRate: TMoney;
+    moneyInMajorCurrencyPercent: TMoney;
 };

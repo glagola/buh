@@ -58,6 +58,26 @@ const columns: GridColDef<TRow>[] = [
         type: 'number',
         field: 'majorToTargetCurrencyExchangeRate',
         headerName: `${majorCurrency.isoCode}/${targetCurrency.isoCode}`,
+        valueGetter,
+        valueFormatter: moneyFormatter,
+        width: 100,
+    },
+
+    {
+        type: 'number',
+        field: 'moneyInMajorCurrencyPercent',
+        headerName: `${majorCurrency.isoCode}, %`,
+        valueGetter,
+        valueFormatter: ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
+            `${undefined === value ? '' : formatter.format(value * 100)}%`,
+        width: 70,
+    },
+
+    {
+        type: 'number',
+        field: 'totalInMajorCurrency',
+        headerName: `Total, ${majorCurrency.isoCode}`,
+        valueGetter,
         valueFormatter: moneyFormatter,
         width: 100,
     },
