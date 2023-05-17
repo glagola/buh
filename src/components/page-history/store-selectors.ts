@@ -75,14 +75,11 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 currency: targetCurrency,
                 amount: majorToTargetCurrencyExchangeRate,
             },
-            moneyInMajorCurrencyPercent: {
-                currency: majorCurrency,
-                amount: Math.min(
-                    1,
-                    (totalOfAccountsInOtherCurrenciesInMajorCurrency * majorToTargetCurrencyExchangeRate) /
-                        totalInTargetCurrency,
-                ),
-            },
+            moneyInMajorCurrencyPercent: Math.min(
+                1,
+                (totalOfAccountsInOtherCurrenciesInMajorCurrency * majorToTargetCurrencyExchangeRate) /
+                    totalInTargetCurrency,
+            ),
 
             totalInMajorCurrency: {
                 currency: majorCurrency,
@@ -93,6 +90,8 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 currency: targetCurrency,
                 amount: 0,
             },
+
+            deltaFromPreviuosReportPercent: 0,
 
             createdAt: DateTime.fromISO(hItem.createdAt),
         };
@@ -105,6 +104,9 @@ export const prepareRows = (state: TRootState): TRow[] => {
         if (current && prev) {
             current.deltaFromPreviuosReportInTargetCurrency.amount =
                 current.totalInTargetCurrency.amount - prev.totalInTargetCurrency.amount;
+
+            current.deltaFromPreviuosReportPercent =
+                current.deltaFromPreviuosReportInTargetCurrency.amount / current.totalInTargetCurrency.amount;
         }
     }
 

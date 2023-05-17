@@ -13,7 +13,8 @@ export type TRow = {
     totalOfAccountsInTargetCurrency: TMoney;
     totalOfAccountsInOtherCurrenciesInMajorCurrency: TMoney;
     majorToTargetCurrencyExchangeRate: TMoney;
-    moneyInMajorCurrencyPercent: TMoney;
+    moneyInMajorCurrencyPercent: number;
 
     deltaFromPreviuosReportInTargetCurrency: TMoney;
+    deltaFromPreviuosReportPercent: number;
 };

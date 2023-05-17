@@ -21,10 +21,17 @@ const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.valu
 const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
     `${undefined === value ? '' : formatter.format(value)}`;
 
-const percentFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
-    `${undefined === value ? '' : formatter.format(value * 100)}%`;
+const percentFormatter = ({ value }: GridValueFormatterParams<number>) => `${formatter.format(value * 100)} %`;
 
 const columns: GridColDef<TRow>[] = [
+    {
+        type: 'number',
+        field: 'deltaFromPreviuosReportPercent',
+        headerName: `Difference, %`,
+        valueFormatter: percentFormatter,
+        width: 100,
+    },
+
     {
         type: 'number',
         field: 'deltaFromPreviuosReportInTargetCurrency',
@@ -69,7 +76,6 @@ const columns: GridColDef<TRow>[] = [
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
         headerName: `Non ${targetCurrency.isoCode} assets, %`,
-        valueGetter,
         valueFormatter: percentFormatter,
         width: 140,
     },
