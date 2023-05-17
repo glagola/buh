@@ -40,7 +40,7 @@ const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'totalOfAccountsInTargetCurrency',
-        headerName: targetCurrency.isoCode,
+        headerName: `Assets, ${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         width: 120,
@@ -48,10 +48,19 @@ const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
-        headerName: majorCurrency.isoCode,
+        headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
-        width: 100,
+        width: 150,
+    },
+    {
+        type: 'number',
+        field: 'moneyInMajorCurrencyPercent',
+        headerName: `Non ${targetCurrency.isoCode} assets, %`,
+        valueGetter,
+        valueFormatter: ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
+            `${undefined === value ? '' : formatter.format(value * 100)}%`,
+        width: 140,
     },
 
     {
@@ -61,16 +70,6 @@ const columns: GridColDef<TRow>[] = [
         valueGetter,
         valueFormatter: moneyFormatter,
         width: 100,
-    },
-
-    {
-        type: 'number',
-        field: 'moneyInMajorCurrencyPercent',
-        headerName: `Non ${targetCurrency.isoCode} assets`,
-        valueGetter,
-        valueFormatter: ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
-            `${undefined === value ? '' : formatter.format(value * 100)}%`,
-        width: 120,
     },
 
     {
