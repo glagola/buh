@@ -69,6 +69,8 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 currency: majorCurrency,
                 amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
             },
+            majorToTargetCurrencyExchangeRate: exchange(1, majorCurrency, targetCurrency),
+
             createdAt: DateTime.fromISO(hItem.createdAt),
         };
     });

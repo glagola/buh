@@ -19,7 +19,7 @@ const formatter = new Intl.NumberFormat('ru-RU', {
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
 const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
-    `${value ? formatter.format(value) : ''}`;
+    `${undefined === value ? '' : formatter.format(value)}`;
 
 const columns: GridColDef<TRow>[] = [
     {
@@ -50,6 +50,14 @@ const columns: GridColDef<TRow>[] = [
         field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
         headerName: majorCurrency.isoCode,
         valueGetter,
+        valueFormatter: moneyFormatter,
+        width: 100,
+    },
+
+    {
+        type: 'number',
+        field: 'majorToTargetCurrencyExchangeRate',
+        headerName: `${majorCurrency.isoCode}/${targetCurrency.isoCode}`,
         valueFormatter: moneyFormatter,
         width: 100,
     },
