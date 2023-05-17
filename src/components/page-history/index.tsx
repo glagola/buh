@@ -11,38 +11,49 @@ import ImportDB from './db-import';
 import { prepareRows } from './store-selectors';
 import { type TRow, type TMoney } from './types';
 
+const formatter = new Intl.NumberFormat('ru-RU', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
-const valueFormatter = (params: GridValueFormatterParams<TMoney['amount'] | undefined>) => `${params.value ?? ''}`; // TODO proper sum formatting
+const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
+    `${value ? formatter.format(value) : ''}`;
 
 const columns: GridColDef<TRow>[] = [
     {
         field: 'createdAt',
         headerName: 'Date',
         valueFormatter: (params: GridValueFormatterParams<TRow['createdAt']>) => `${params.value.toLocaleString()}`,
+        headerAlign: 'center',
     },
     {
         type: 'number',
         field: 'totalInTargetCurrency',
         headerName: `Total, ${targetCurrency.isoCode}`,
         valueGetter,
-        valueFormatter,
+        valueFormatter: moneyFormatter,
+        width: 120,
     },
     {
         type: 'number',
         field: 'totalOfAccountsInTargetCurrency',
         headerName: targetCurrency.isoCode,
         valueGetter,
-        valueFormatter,
+        valueFormatter: moneyFormatter,
+        width: 120,
     },
     {
         type: 'number',
         field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
         headerName: majorCurrency.isoCode,
         valueGetter,
-        valueFormatter,
+        valueFormatter: moneyFormatter,
+        width: 120,
     },
 
-    // TODO add remove record action button
+    // TODO add remove&edit record action buttons
 ];
 
 const HistoryPage = () => {
@@ -71,6 +82,7 @@ const HistoryPage = () => {
                 </Stack>
                 <DataGrid
                     autoHeight
+                    density='compact'
                     rows={rows}
                     columns={columns}
                 />
