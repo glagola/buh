@@ -66,11 +66,11 @@ const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
-        headerName: `${majorCurrency.isoCode}, %`,
+        headerName: `Non ${targetCurrency.isoCode} assets`,
         valueGetter,
         valueFormatter: ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
             `${undefined === value ? '' : formatter.format(value * 100)}%`,
-        width: 70,
+        width: 120,
     },
 
     {
