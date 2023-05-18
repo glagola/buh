@@ -111,7 +111,7 @@ export const prepareRows = (state: TRootState): TRow[] => {
                 current.totalInTargetCurrency.amount - prev.totalInTargetCurrency.amount;
 
             current.deltaFromPreviuosReportPercent =
-                current.deltaFromPreviuosReportInTargetCurrency.amount / current.totalInTargetCurrency.amount;
+                current.deltaFromPreviuosReportInTargetCurrency.amount / prev.totalInTargetCurrency.amount;
 
             current.deltaPerMonthAverageInTargetCurrency.amount =
                 (current.deltaFromPreviuosReportInTargetCurrency.amount /
