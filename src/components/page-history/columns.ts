@@ -1,18 +1,35 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
-import { majorCurrency, targetCurrency } from '@/settings';
-import { type TRow, type TMoney } from './types';
 
-const formatter = new Intl.NumberFormat('ru-RU', {
-    style: 'decimal',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
+import { majorCurrency, targetCurrency } from '@/settings';
+
+import { formatMoneyWithCents } from './formatting';
+import { type TRow, type TMoney } from './types';
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
 const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
-    `${undefined === value ? '' : formatter.format(value)}`;
+    `${undefined === value ? '' : formatMoneyWithCents(value)}`;
 
-const percentFormatter = ({ value }: GridValueFormatterParams<number>) => `${formatter.format(value * 100)} %`;
+const percentFormatter = ({ value }: GridValueFormatterParams<number>) => `${formatMoneyWithCents(value * 100)} %`;
+
+export const totalInTargetCurrencyHeader = {
+    type: 'number',
+    field: 'totalInTargetCurrency',
+    headerName: `Total, ${targetCurrency.isoCode}`,
+    valueGetter,
+    valueFormatter: moneyFormatter,
+    flex: 1,
+    maxWidth: 112,
+};
+
+export const totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader = {
+    type: 'number',
+    field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
+    headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
+    valueGetter,
+    valueFormatter: moneyFormatter,
+    flex: 1,
+    maxWidth: 150,
+};
 
 export const columns: GridColDef<TRow>[] = [
     {
@@ -51,15 +68,7 @@ export const columns: GridColDef<TRow>[] = [
         flex: 1,
         maxWidth: 93,
     },
-    {
-        type: 'number',
-        field: 'totalInTargetCurrency',
-        headerName: `Total, ${targetCurrency.isoCode}`,
-        valueGetter,
-        valueFormatter: moneyFormatter,
-        flex: 1,
-        maxWidth: 112,
-    },
+    totalInTargetCurrencyHeader,
     {
         type: 'number',
         field: 'totalOfAccountsInTargetCurrency',
@@ -69,15 +78,7 @@ export const columns: GridColDef<TRow>[] = [
         flex: 1,
         maxWidth: 112,
     },
-    {
-        type: 'number',
-        field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
-        headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
-        valueGetter,
-        valueFormatter: moneyFormatter,
-        flex: 1,
-        maxWidth: 150,
-    },
+    totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader,
     {
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
