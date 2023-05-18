@@ -9,23 +9,19 @@ import ExportDB from './db-export';
 import ImportDB from './db-import';
 import { prepareRows } from './store-selectors';
 
-const styles = {
-    buttons: {
-        my: 3,
-    },
-};
-
 const HistoryPage = () => {
     const rows = useSelector(prepareRows);
 
     return (
-        <Container>
-            <Stack>
+        <Container sx={{ p: 3 }}>
+            <Stack
+                direction='column'
+                gap={3}
+            >
                 <Stack
                     direction='row'
                     gap={3}
                     justifyContent='flex-end'
-                    sx={styles.buttons}
                 >
                     <ImportDB />
                     <ExportDB />
