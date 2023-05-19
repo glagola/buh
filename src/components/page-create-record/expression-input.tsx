@@ -3,9 +3,11 @@ import { useCallback, useState } from 'react';
 import { type FieldValues, type UseControllerProps, useController } from 'react-hook-form';
 
 import { safeEvaluate } from '@/utils/expression';
+import { formatMoneyWithCents, formatNumber } from '@/utils/format';
 
 type TProps = {
     label?: string;
+    formatAsMoney?: boolean;
 };
 
 const ExpressionInput = <T extends FieldValues>(props: UseControllerProps<T> & TProps) => {
@@ -22,6 +24,16 @@ const ExpressionInput = <T extends FieldValues>(props: UseControllerProps<T> & T
         onBlur();
     }, [setFocused, onBlur]);
 
+    let processedValues: string | undefined = value;
+
+    if (!focused && !invalid) {
+        const evalRes = safeEvaluate(value);
+
+        if (typeof evalRes === 'number') {
+            processedValues = props.formatAsMoney ? formatMoneyWithCents(evalRes) : formatNumber(evalRes);
+        }
+    }
+
     return (
         <TextField
             fullWidth
@@ -32,7 +44,7 @@ const ExpressionInput = <T extends FieldValues>(props: UseControllerProps<T> & T
             onChange={onChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            value={(focused || invalid ? value : safeEvaluate(value)) ?? ''} // TODO: format money properly with spaces
+            value={processedValues ?? ''} // TODO: format money properly with spaces
             error={invalid}
         />
     );

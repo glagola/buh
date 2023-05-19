@@ -1,8 +1,8 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
 
 import { majorCurrency, targetCurrency } from '@/settings';
+import { formatMoneyWithCents } from '@/utils/format';
 
-import { formatMoneyWithCents } from './formatting';
 import { type TRow, type TMoney } from './types';
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
