@@ -1,4 +1,4 @@
-import { createAction, createSlice } from '@reduxjs/toolkit';
+import { createAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
@@ -6,11 +6,13 @@ import { useSelector } from 'react-redux';
 
 import type { TBuhContainer, TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
 import { type TRootState } from '@/store';
+import { generateUUID } from '@/utils/uuid';
 
 const initialState: TBuhContainer = {
     db: {
         history: [],
     },
+    isChanged: false,
 };
 
 export const name = 'buh';
@@ -22,14 +24,28 @@ const slice = createSlice({
     initialState,
     reducers: {
         storeHistoryItem(state, action: PayloadAction<THistoryItem>): void {
-            state.db.history.push(action.payload);
-            state.changedAt = DateTime.now();
+            const prevIndex = state.db.history.findIndex((item) => item.id === action.payload.id);
+
+            if (-1 === prevIndex) {
+                state.db.history.push(action.payload);
+            } else {
+                state.db.history.splice(prevIndex, 1, action.payload);
+            }
+
+            state.isChanged = true;
         },
     },
     extraReducers: (builder) => {
-        builder.addCase(loadFromFile, (_, { payload: buh }) => ({
-            db: buh,
-            changedAt: undefined,
+        builder.addCase(loadFromFile, (_, { payload: db }) => ({
+            db: {
+                // TODO create migration engine
+                history: db.history.map((item: THistoryItem): THistoryItem => {
+                    item.id ??= generateUUID();
+
+                    return item;
+                }),
+            },
+            isChanged: false,
         }));
     },
 });
@@ -39,7 +55,9 @@ export const actions = {
     loadFromFile,
 };
 
-export const isDBChanged = ({ [name]: { changedAt } }: TRootState): boolean => !!changedAt;
+const getSliceRoot = (_state: TRootState): TBuhContainer => _state[name];
+
+export const isDBChanged = (_state: TRootState): boolean => getSliceRoot(_state).isChanged;
 
 export const reducer = slice.reducer;
 
@@ -55,7 +73,7 @@ const compareDateTime =
     };
 
 export const chronology = (_state: TRootState): THistoryItem[] => {
-    const db = _state[name].db;
+    const { db } = getSliceRoot(_state);
 
     const history = [...db.history];
 
@@ -85,8 +103,8 @@ const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
     }, new Map<U, T[]>());
 
 export const getPreviouslyUsedCurrencies = (state: TRootState): TCurrency[] => {
-    const usedCurrencies = state.buh.db.history
-        .map((hItem) => hItem.accountBalances)
+    const usedCurrencies = getSliceRoot(state)
+        .db.history.map((hItem) => hItem.accountBalances)
         .flat(1)
         .map((accountBalance) => accountBalance.account.currency);
 
@@ -123,4 +141,9 @@ export const getArchivedAccountsGroupByCurrency = (_state: TRootState): Map<stri
     return res;
 };
 
-export const useDBExport = () => useSelector((state: TRootState) => state[name]);
+export const useDBExport = () => useSelector((state: TRootState) => getSliceRoot(state));
+
+export const reportById = createSelector(
+    [getSliceRoot],
+    ({ db: { history } }) => new Map(history.map((item) => [item.id, item])),
+);

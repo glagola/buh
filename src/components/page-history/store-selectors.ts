@@ -1,11 +1,9 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
 import { type TCurrency, type TCurrencyQuote } from '@/entites';
 import { majorCurrency, targetCurrency } from '@/settings';
-import { type TRootState } from '@/store';
 import { chronology } from '@/store/history';
-
-import { type TRow } from './types';
 
 const buildConverter = (quotes: TCurrencyQuote[]) => {
     const rates = new Map<TCurrency['isoCode'], TCurrencyQuote['quote']>(
@@ -24,10 +22,7 @@ const buildConverter = (quotes: TCurrencyQuote[]) => {
     };
 };
 
-// TODO move to createSelector
-export const prepareRows = (state: TRootState): TRow[] => {
-    const history = chronology(state);
-
+export const prepareRows = createSelector([chronology], (history) => {
     const res = history.map((hItem) => {
         const exchange = buildConverter(hItem.quotes);
 
@@ -57,7 +52,7 @@ export const prepareRows = (state: TRootState): TRow[] => {
         const majorToTargetCurrencyExchangeRate = exchange(1, majorCurrency, targetCurrency);
 
         return {
-            id: hItem.createdAt,
+            id: hItem.id,
 
             totalInTargetCurrency: {
                 currency: targetCurrency,
@@ -121,4 +116,4 @@ export const prepareRows = (state: TRootState): TRow[] => {
     }
 
     return res;
-};
+});

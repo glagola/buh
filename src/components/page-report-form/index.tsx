@@ -10,16 +10,19 @@ import { DatePickerElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToggle } from 'react-use';
 
-import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
+import type { TAccount, TCurrency, THistoryItemId, TRawAccountDetails } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import {
     getArchivedAccountsGroupByCurrency,
     getPreviouslyUsedCurrencies,
     getRecentlyUsedAccounts,
+    reportById,
 } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
+import { formatNumber } from '@/utils/format';
 import { now } from '@/utils/time';
+import { generateUUID } from '@/utils/uuid';
 
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
@@ -56,7 +59,11 @@ const sortBalances = (accounts: TAccountBalance[]) => {
     return accounts;
 };
 
-const CreateRecordPage = () => {
+type TProps = {
+    id?: THistoryItemId;
+};
+
+const ReportFormPage = (props: TProps) => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
@@ -66,14 +73,21 @@ const CreateRecordPage = () => {
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
     const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
 
+    const _reportById = useSelector(reportById);
+    const reportToEdit = undefined === props.id ? undefined : _reportById.get(props.id);
+
     const defaultValues = useMemo(() => {
-        const accounts = _.groupBy(
-            recentlyUsedAccounts.map((account) => ({ account, formula: '' })),
-            (s) => s.account.currency.isoCode,
-        );
+        const balances = reportToEdit
+            ? reportToEdit.accountBalances.map((item) => ({
+                  account: item.account,
+                  formula: formatNumber(item.balance),
+              }))
+            : recentlyUsedAccounts.map((account) => ({ account, formula: '' }));
+
+        const accounts = _.groupBy(balances, (s) => s.account.currency.isoCode);
 
         for (const { isoCode } of previouslyUsedCurrencies) {
-            if (!accounts.hasOwnProperty(isoCode)) {
+            if (!(isoCode in accounts)) {
                 accounts[isoCode] = [];
             }
         }
@@ -82,7 +96,7 @@ const CreateRecordPage = () => {
             accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
             quotes: buildCurrencyQuotes(accounts),
         };
-    }, [recentlyUsedAccounts, previouslyUsedCurrencies]);
+    }, [recentlyUsedAccounts, previouslyUsedCurrencies, reportToEdit]);
 
     const form = useForm<THistoryItemForm>({
         defaultValues,
@@ -107,9 +121,10 @@ const CreateRecordPage = () => {
 
         dispatch(
             actions.storeHistoryItem({
-                createdAt: data.createdAt,
-                accountBalances: accounts,
+                id: reportToEdit?.id ?? generateUUID(),
                 quotes,
+                accountBalances: accounts,
+                createdAt: data.createdAt,
             }),
         );
         router.push('/');
@@ -263,4 +278,4 @@ const CreateRecordPage = () => {
     );
 };
 
-export default CreateRecordPage;
+export default ReportFormPage;

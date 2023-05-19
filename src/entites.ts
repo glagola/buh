@@ -1,5 +1,10 @@
-import { type DateTime } from 'luxon';
 import { z } from 'zod';
+
+const ZUUID = z.string().uuid();
+
+const ZHistoryItemId = ZUUID;
+
+export type THistoryItemId = z.infer<typeof ZHistoryItemId>;
 
 export const ZCurrencyISOCode = z
     .string()
@@ -44,6 +49,7 @@ const ZAccountHistoryBalance = z.object({
 });
 
 const ZHistoryItem = z.object({
+    id: ZHistoryItemId.optional(),
     accountBalances: z.array(ZAccountHistoryBalance),
     quotes: z.array(ZCurrencyQuote),
     createdAt: z.string().datetime({ offset: true }),
@@ -58,5 +64,5 @@ export type TBuh = z.infer<typeof ZBuh>;
 
 export type TBuhContainer = {
     db: TBuh;
-    changedAt?: DateTime;
+    isChanged: boolean;
 };

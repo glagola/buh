@@ -56,7 +56,7 @@ const HistoryPage = () => {
                         startIcon={<AddIcon />}
                         variant='outlined'
                         component={NextJSLink}
-                        href='/add'
+                        href='/report/create'
                     >
                         Report
                     </Button>
