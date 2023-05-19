@@ -2,7 +2,7 @@ import { evaluate } from 'mathjs';
 
 export const safeEvaluate = (expr: string): number | undefined => {
     try {
-        return evaluate(expr) as number;
+        return evaluate(expr.replace(/\s+/g, '')) as number;
     } catch {
         return undefined;
     }
