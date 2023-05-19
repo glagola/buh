@@ -26,7 +26,7 @@ export const historyItemFormSchema = z.object({
     quotes: z.array(ZCurrencyQuoteFormula),
 });
 
-type TAccountBalance = z.infer<typeof ZAccountBalance>;
+export type TAccountBalance = z.infer<typeof ZAccountBalance>;
 
 export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
 

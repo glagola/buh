@@ -28,6 +28,7 @@ import {
     type TCurrencyQuoteByFormula,
     type TAccountBalanceByCurrency,
     type THistoryItemForm,
+    type TAccountBalance,
 } from './validation';
 
 const buildCurrencyQuotes = (
@@ -43,6 +44,12 @@ const buildCurrencyQuotes = (
         currency,
         formula: formulaByCurrencyISOCode.get(currency.isoCode) ?? '',
     }));
+};
+
+const sortBalances = (accounts: TAccountBalance[]) => {
+    accounts.sort((a, b) => a.account.title.localeCompare(b.account.title));
+
+    return accounts;
 };
 
 const CreateRecordPage = () => {
@@ -61,7 +68,7 @@ const CreateRecordPage = () => {
         );
 
         return {
-            accounts,
+            accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
             quotes: buildCurrencyQuotes(accounts),
         };
     }, [recentlyUsedAccounts]);
@@ -107,7 +114,7 @@ const CreateRecordPage = () => {
 
             const balances = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
             balances.push(accountBalance);
-            form.setValue(`accounts.${currencyIsoCode}`, balances);
+            form.setValue(`accounts.${currencyIsoCode}`, sortBalances(balances));
 
             form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
         },
