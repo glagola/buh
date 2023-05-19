@@ -8,6 +8,7 @@ import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import type { AppType } from 'next/app';
 import { Provider } from 'react-redux';
 
+import DBGuard from '@/components/db-guard';
 import store from '@/store';
 import { api } from '@/utils/api';
 
@@ -17,7 +18,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
             <CssBaseline />
             <LocalizationProvider dateAdapter={AdapterLuxon}>
                 <Provider store={store}>
-                    <Component {...pageProps} />
+                    <DBGuard>
+                        <Component {...pageProps} />
+                    </DBGuard>
                 </Provider>
             </LocalizationProvider>
         </>

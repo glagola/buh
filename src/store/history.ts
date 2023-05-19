@@ -4,11 +4,13 @@ import _ from 'lodash';
 import { DateTime } from 'luxon';
 import { useSelector } from 'react-redux';
 
-import type { TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
+import type { TBuhContainer, TBuh, TAccount, TCurrency, THistoryItem, TArchivedAccount } from '@/entites';
 import { type TRootState } from '@/store';
 
-const initialState: TBuh = {
-    history: [],
+const initialState: TBuhContainer = {
+    db: {
+        history: [],
+    },
 };
 
 export const name = 'buh';
@@ -20,11 +22,15 @@ const slice = createSlice({
     initialState,
     reducers: {
         storeHistoryItem(state, action: PayloadAction<THistoryItem>): void {
-            state.history.push(action.payload);
+            state.db.history.push(action.payload);
+            state.changedAt = DateTime.now();
         },
     },
     extraReducers: (builder) => {
-        builder.addCase(loadFromFile, (_, { payload }) => payload);
+        builder.addCase(loadFromFile, (_, { payload: buh }) => ({
+            db: buh,
+            changedAt: undefined,
+        }));
     },
 });
 
@@ -32,6 +38,8 @@ export const actions = {
     ...slice.actions,
     loadFromFile,
 };
+
+export const isDBChanged = ({ [name]: { changedAt } }: TRootState): boolean => !!changedAt;
 
 export const reducer = slice.reducer;
 
@@ -47,9 +55,9 @@ const compareDateTime =
     };
 
 export const chronology = (_state: TRootState): THistoryItem[] => {
-    const state = _state.buh;
+    const db = _state[name].db;
 
-    const history = [...state.history];
+    const history = [...db.history];
 
     history.sort(compareDateTime((item) => DateTime.fromISO(item.createdAt)));
 
@@ -77,7 +85,7 @@ const groupBy = <T, U>(items: T[], getKey: (item: T) => U): Map<U, T[]> =>
     }, new Map<U, T[]>());
 
 export const getPreviouslyUsedCurrencies = (state: TRootState): TCurrency[] => {
-    const usedCurrencies = state.buh.history
+    const usedCurrencies = state.buh.db.history
         .map((hItem) => hItem.accountBalances)
         .flat(1)
         .map((accountBalance) => accountBalance.account.currency);

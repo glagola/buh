@@ -1,3 +1,4 @@
+import { type DateTime } from 'luxon';
 import { z } from 'zod';
 
 export const ZCurrencyISOCode = z
@@ -59,3 +60,8 @@ export const ZBuh = z.object({
     history: z.array(ZHistoryItem),
 });
 export type TBuh = z.infer<typeof ZBuh>;
+
+export type TBuhContainer = {
+    db: TBuh;
+    changedAt?: DateTime;
+};
