@@ -12,7 +12,11 @@ import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { requiredCurrencies } from '@/settings';
-import { getArchivedAccountsGroupByCurrency, getRecentlyUsedAccounts } from '@/store/history';
+import {
+    getArchivedAccountsGroupByCurrency,
+    getPreviouslyUsedCurrencies,
+    getRecentlyUsedAccounts,
+} from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
 import { now } from '@/utils/time';
@@ -60,6 +64,7 @@ const CreateRecordPage = () => {
     const archivedAccontsByCurrency = useSelector(getArchivedAccountsGroupByCurrency);
 
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
+    const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
 
     const defaultValues = useMemo(() => {
         const accounts = _.groupBy(
@@ -67,11 +72,17 @@ const CreateRecordPage = () => {
             (s) => s.account.currency.isoCode,
         );
 
+        for (const { isoCode } of previouslyUsedCurrencies) {
+            if (!accounts.hasOwnProperty(isoCode)) {
+                accounts[isoCode] = [];
+            }
+        }
+
         return {
             accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
             quotes: buildCurrencyQuotes(accounts),
         };
-    }, [recentlyUsedAccounts]);
+    }, [recentlyUsedAccounts, previouslyUsedCurrencies]);
 
     const form = useForm<THistoryItemForm>({
         defaultValues,
