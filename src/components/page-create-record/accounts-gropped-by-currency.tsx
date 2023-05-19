@@ -80,6 +80,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                 <ExpressionInput
                                     control={control}
                                     name={`accounts.${accountBalance.account.currency.isoCode}.${index}.formula`}
+                                    formatAsMoney
                                 />
 
                                 {isArchiving && (
@@ -92,7 +93,11 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                             }
                                         }}
                                     >
-                                        {archive.used.has(accountBalance.account.id) ? <ArchiveIcon /> : <HighlightOffIcon />}
+                                        {archive.used.has(accountBalance.account.id) ? (
+                                            <ArchiveIcon />
+                                        ) : (
+                                            <HighlightOffIcon />
+                                        )}
                                     </IconButton>
                                 )}
                             </Stack>
