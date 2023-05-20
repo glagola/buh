@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
+import { DateTime } from 'luxon';
 import NextJSLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
@@ -78,9 +79,9 @@ const ReportFormPage = (props: TProps) => {
 
     const defaultValues = useMemo(() => {
         const balances = reportToEdit
-            ? reportToEdit.accountBalances.map((item) => ({
-                  account: item.account,
-                  formula: formatNumber(item.balance),
+            ? reportToEdit.accountBalances.map(({ balance, ...rest }) => ({
+                  ...rest,
+                  formula: formatNumber(balance),
               }))
             : recentlyUsedAccounts.map((account) => ({ account, formula: '' }));
 
@@ -94,7 +95,13 @@ const ReportFormPage = (props: TProps) => {
 
         return {
             accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
-            quotes: buildCurrencyQuotes(accounts),
+            quotes: buildCurrencyQuotes(
+                accounts,
+                reportToEdit?.quotes.map(({ quote, ...rest }) => ({ ...rest, formula: formatNumber(quote) })),
+            ),
+            createdAt: DateTime.fromISO(
+                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
+            ) as unknown as string,
         };
     }, [recentlyUsedAccounts, previouslyUsedCurrencies, reportToEdit]);
 
