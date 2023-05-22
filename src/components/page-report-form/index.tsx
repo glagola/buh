@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
-import type { TAccount, TCurrency, THistoryItemId, TRawAccountDetails } from '@/entites';
+import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import {
     getArchivedAccountsGroupByCurrency,
