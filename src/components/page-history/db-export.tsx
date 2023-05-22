@@ -8,7 +8,7 @@ const ExportDB = () => {
     const buh = useDBExport();
 
     const handleExportDB = useCallback(() => {
-        const fileData = JSON.stringify(buh);
+        const fileData = JSON.stringify(buh, undefined, 4);
         const blob = new Blob([fileData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');

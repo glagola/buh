@@ -1,4 +1,5 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
+import { Link } from 'react-router-dom';
 
 import { majorCurrency, targetCurrency } from '@/settings';
 import { formatMoneyWithCents } from '@/utils/format';
@@ -59,14 +60,16 @@ export const columns: GridColDef<TRow>[] = [
         valueFormatter: moneyFormatter,
         flex: 1,
     },
-
     {
-        field: 'createdAt',
-        headerName: 'Report date',
-        valueFormatter: ({ value }: GridValueFormatterParams<TRow['createdAt']>) =>
-            `${(value && value.toISODate()) ?? ''}`,
         flex: 1,
         maxWidth: 93,
+        field: 'createdAt',
+        headerName: 'Report date',
+        valueFormatter: ({ value }: GridValueFormatterParams<TRow['createdAt']>) => {
+            return `${(value && value.toISODate()) ?? ''}`;
+        },
+
+        renderCell: (params) => <Link to={`/report/${encodeURIComponent(params.id)}`}>{params.formattedValue}</Link>,
     },
     totalInTargetCurrencyHeader,
     {

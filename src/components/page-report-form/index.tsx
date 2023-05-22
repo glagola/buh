@@ -2,24 +2,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
-import NextJSLink from 'next/link';
-import { useRouter } from 'next/navigation';
+import { DateTime } from 'luxon';
 import { useCallback, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { DatePickerElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
-import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
+import type { TAccount, TCurrency, THistoryItemId, TRawAccountDetails } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import {
     getArchivedAccountsGroupByCurrency,
     getPreviouslyUsedCurrencies,
     getRecentlyUsedAccounts,
+    reportById,
 } from '@/store/history';
 import { actions } from '@/store/history';
 import { evaluateForSure } from '@/utils/expression';
+import { formatNumber } from '@/utils/format';
 import { now } from '@/utils/time';
+import { generateUUID } from '@/utils/uuid';
 
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
@@ -56,7 +59,7 @@ const sortBalances = (accounts: TAccountBalance[]) => {
     return accounts;
 };
 
-const CreateRecordPage = () => {
+const ReportFormPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
@@ -66,23 +69,37 @@ const CreateRecordPage = () => {
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
     const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
 
+    const { reportId } = useParams();
+    const _reportById = useSelector(reportById);
+    const reportToEdit = undefined === reportId ? undefined : _reportById.get(reportId);
+
     const defaultValues = useMemo(() => {
-        const accounts = _.groupBy(
-            recentlyUsedAccounts.map((account) => ({ account, formula: '' })),
-            (s) => s.account.currency.isoCode,
-        );
+        const balances = reportToEdit
+            ? reportToEdit.accountBalances.map(({ balance, ...rest }) => ({
+                  ...rest,
+                  formula: formatNumber(balance),
+              }))
+            : recentlyUsedAccounts.map((account) => ({ account, formula: '' }));
+
+        const accounts = _.groupBy(balances, (s) => s.account.currency.isoCode);
 
         for (const { isoCode } of previouslyUsedCurrencies) {
-            if (!accounts.hasOwnProperty(isoCode)) {
+            if (!(isoCode in accounts)) {
                 accounts[isoCode] = [];
             }
         }
 
         return {
             accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
-            quotes: buildCurrencyQuotes(accounts),
+            quotes: buildCurrencyQuotes(
+                accounts,
+                reportToEdit?.quotes.map(({ quote, ...rest }) => ({ ...rest, formula: formatNumber(quote) })),
+            ),
+            createdAt: DateTime.fromISO(
+                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
+            ) as unknown as string,
         };
-    }, [recentlyUsedAccounts, previouslyUsedCurrencies]);
+    }, [recentlyUsedAccounts, previouslyUsedCurrencies, reportToEdit]);
 
     const form = useForm<THistoryItemForm>({
         defaultValues,
@@ -90,7 +107,7 @@ const CreateRecordPage = () => {
         mode: 'all',
     });
 
-    const router = useRouter();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const handleSubmit = (data: THistoryItemForm): void => {
         const accounts = Object.values(data.accounts)
@@ -107,12 +124,13 @@ const CreateRecordPage = () => {
 
         dispatch(
             actions.storeHistoryItem({
-                createdAt: data.createdAt,
-                accountBalances: accounts,
+                id: reportToEdit?.id ?? generateUUID(),
                 quotes,
+                accountBalances: accounts,
+                createdAt: data.createdAt,
             }),
         );
-        router.push('/');
+        navigate('/');
     };
 
     const handleAccountAdd = useCallback(
@@ -222,8 +240,8 @@ const CreateRecordPage = () => {
                             >
                                 <Button
                                     variant='text'
-                                    component={NextJSLink}
-                                    href='/'
+                                    component={Link}
+                                    to='/'
                                 >
                                     Cancel
                                     {
@@ -263,4 +281,4 @@ const CreateRecordPage = () => {
     );
 };
 
-export default CreateRecordPage;
+export default ReportFormPage;

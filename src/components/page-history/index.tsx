@@ -1,9 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, Container, Stack } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import NextJSLink from 'next/link';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { columns, totalInTargetCurrencyHeader, totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader } from './columns';
 import ExportDB from './db-export';
@@ -55,8 +55,8 @@ const HistoryPage = () => {
                     <Button
                         startIcon={<AddIcon />}
                         variant='outlined'
-                        component={NextJSLink}
-                        href='/add'
+                        component={Link}
+                        to='/report'
                     >
                         Report
                     </Button>
