@@ -3,12 +3,11 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import NextJSLink from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { DatePickerElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
 import type { TAccount, TCurrency, THistoryItemId, TRawAccountDetails } from '@/entites';
@@ -60,11 +59,7 @@ const sortBalances = (accounts: TAccountBalance[]) => {
     return accounts;
 };
 
-type TProps = {
-    id?: THistoryItemId;
-};
-
-const ReportFormPage = (props: TProps) => {
+const ReportFormPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
@@ -74,8 +69,9 @@ const ReportFormPage = (props: TProps) => {
     const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
     const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
 
+    const { reportId } = useParams();
     const _reportById = useSelector(reportById);
-    const reportToEdit = undefined === props.id ? undefined : _reportById.get(props.id);
+    const reportToEdit = undefined === reportId ? undefined : _reportById.get(reportId);
 
     const defaultValues = useMemo(() => {
         const balances = reportToEdit
@@ -111,7 +107,7 @@ const ReportFormPage = (props: TProps) => {
         mode: 'all',
     });
 
-    const router = useRouter();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const handleSubmit = (data: THistoryItemForm): void => {
         const accounts = Object.values(data.accounts)
@@ -134,7 +130,7 @@ const ReportFormPage = (props: TProps) => {
                 createdAt: data.createdAt,
             }),
         );
-        router.push('/');
+        navigate('/');
     };
 
     const handleAccountAdd = useCallback(
@@ -244,8 +240,8 @@ const ReportFormPage = (props: TProps) => {
                             >
                                 <Button
                                     variant='text'
-                                    component={NextJSLink}
-                                    href='/'
+                                    component={Link}
+                                    to='/'
                                 >
                                     Cancel
                                     {

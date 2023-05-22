@@ -1,5 +1,5 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
-import NextJSLink from 'next/link';
+import { Link } from 'react-router-dom';
 
 import { majorCurrency, targetCurrency } from '@/settings';
 import { formatMoneyWithCents } from '@/utils/format';
@@ -69,7 +69,7 @@ export const columns: GridColDef<TRow>[] = [
             return `${(value && value.toISODate()) ?? ''}`;
         },
 
-        renderCell: (params) => <NextJSLink href={`/report/${params.id}`}>{params.formattedValue}</NextJSLink>,
+        renderCell: (params) => <Link to={`/report/${encodeURIComponent(params.id)}`}>{params.formattedValue}</Link>,
     },
     totalInTargetCurrencyHeader,
     {
