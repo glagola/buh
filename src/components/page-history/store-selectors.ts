@@ -1,18 +1,17 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
-import { type TCurrency, type TCurrencyQuote } from '@/entites';
+import { type TCurrency, type TExchangeRate } from '@/entites';
 import { majorCurrency, targetCurrency } from '@/settings';
-import { chronology } from '@/store/history';
+import { getAccountByIdMap, getCurrencyByIdMap, getReports } from '@/store/buh';
+import { compareDateTime } from '@/utils/time';
 
-const buildConverter = (quotes: TCurrencyQuote[]) => {
-    const rates = new Map<TCurrency['isoCode'], TCurrencyQuote['quote']>(
-        quotes.map((q) => [q.currency.isoCode, q.quote]),
-    );
+const buildConverter = (quotes: TExchangeRate[]) => {
+    const rates = new Map<TCurrency['id'], TExchangeRate['quote']>(quotes.map((q) => [q.currencyId, q.quote]));
 
     return (sum: number, from: TCurrency, to: TCurrency): number => {
-        const fromRate = rates.get(from.isoCode);
-        const toRate = rates.get(to.isoCode);
+        const fromRate = rates.get(from.id);
+        const toRate = rates.get(to.id);
 
         if (undefined === fromRate || undefined === toRate) {
             throw new Error(`No way to convert from ${from.isoCode} to ${to.isoCode}`);
@@ -22,98 +21,102 @@ const buildConverter = (quotes: TCurrencyQuote[]) => {
     };
 };
 
-export const prepareRows = createSelector([chronology], (history) => {
-    const res = history.map((hItem) => {
-        const exchange = buildConverter(hItem.quotes);
+const reportsChronologically = createSelector([getReports], (reports) =>
+    [...reports].sort(compareDateTime((item) => DateTime.fromISO(item.createdAt))),
+);
 
-        let totalInTargetCurrency = 0;
-        let totalOfAccountsInTargetCurrency = 0;
-        let totalOfAccountsInOtherCurrenciesInMajorCurrency = 0;
+export const prepareRows = createSelector(
+    [reportsChronologically, getAccountByIdMap, getCurrencyByIdMap],
+    (reports, accountById, currencyById) => {
+        const res = reports.map((report) => {
+            const exchange = buildConverter(report.exchangeRates);
 
-        for (const accountBalance of hItem.accountBalances) {
-            const amountInTargetCurrency = exchange(
-                accountBalance.balance,
-                accountBalance.account.currency,
-                targetCurrency,
-            );
-            totalInTargetCurrency += amountInTargetCurrency;
+            let totalInTargetCurrency = 0;
+            let totalOfAccountsInTargetCurrency = 0;
+            let totalOfAccountsInOtherCurrenciesInMajorCurrency = 0;
 
-            if (targetCurrency.isoCode === accountBalance.account.currency.isoCode) {
-                totalOfAccountsInTargetCurrency += amountInTargetCurrency;
-            } else {
-                totalOfAccountsInOtherCurrenciesInMajorCurrency += exchange(
-                    accountBalance.balance,
-                    accountBalance.account.currency,
-                    majorCurrency,
-                );
+            for (const { accountId, balance } of report.balances) {
+                const account = accountById.get(accountId);
+                if (undefined === account) continue;
+                const currency = currencyById.get(account.currencyId);
+                if (undefined === currency) continue;
+
+                const amountInTargetCurrency = exchange(balance, currency, targetCurrency);
+                totalInTargetCurrency += amountInTargetCurrency;
+
+                if (targetCurrency.id === currency.id) {
+                    totalOfAccountsInTargetCurrency += amountInTargetCurrency;
+                } else {
+                    totalOfAccountsInOtherCurrenciesInMajorCurrency += exchange(balance, currency, majorCurrency);
+                }
+            }
+
+            const majorToTargetCurrencyExchangeRate = exchange(1, majorCurrency, targetCurrency);
+
+            return {
+                id: report.id,
+
+                totalInTargetCurrency: {
+                    currency: targetCurrency,
+                    amount: totalInTargetCurrency,
+                },
+                totalOfAccountsInTargetCurrency: {
+                    currency: targetCurrency,
+                    amount: totalOfAccountsInTargetCurrency,
+                },
+                totalOfAccountsInOtherCurrenciesInMajorCurrency: {
+                    currency: majorCurrency,
+                    amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
+                },
+                majorToTargetCurrencyExchangeRate: {
+                    currency: targetCurrency,
+                    amount: majorToTargetCurrencyExchangeRate,
+                },
+                moneyInMajorCurrencyPercent: Math.min(
+                    1,
+                    (totalOfAccountsInOtherCurrenciesInMajorCurrency * majorToTargetCurrencyExchangeRate) /
+                        totalInTargetCurrency,
+                ),
+
+                totalInMajorCurrency: {
+                    currency: majorCurrency,
+                    amount: totalInTargetCurrency / majorToTargetCurrencyExchangeRate,
+                },
+
+                deltaFromPreviuosReportInTargetCurrency: {
+                    currency: targetCurrency,
+                    amount: 0,
+                },
+
+                deltaPerMonthAverageInTargetCurrency: {
+                    currency: targetCurrency,
+                    amount: 0,
+                },
+
+                deltaFromPreviuosReportPercent: 0,
+
+                createdAt: DateTime.fromISO(report.createdAt),
+            };
+        });
+
+        for (let i = 0; i < res.length - 1; ++i) {
+            const current = res[i];
+            const prev = res[i + 1];
+
+            if (current && prev) {
+                current.deltaFromPreviuosReportInTargetCurrency.amount =
+                    current.totalInTargetCurrency.amount - prev.totalInTargetCurrency.amount;
+
+                current.deltaFromPreviuosReportPercent =
+                    current.deltaFromPreviuosReportInTargetCurrency.amount / prev.totalInTargetCurrency.amount;
+
+                current.deltaPerMonthAverageInTargetCurrency.amount =
+                    (current.deltaFromPreviuosReportInTargetCurrency.amount /
+                        current.createdAt.diff(prev.createdAt).as('days')) *
+                    (365 / 12);
             }
         }
 
-        const majorToTargetCurrencyExchangeRate = exchange(1, majorCurrency, targetCurrency);
-
-        return {
-            id: hItem.id,
-
-            totalInTargetCurrency: {
-                currency: targetCurrency,
-                amount: totalInTargetCurrency,
-            },
-            totalOfAccountsInTargetCurrency: {
-                currency: targetCurrency,
-                amount: totalOfAccountsInTargetCurrency,
-            },
-            totalOfAccountsInOtherCurrenciesInMajorCurrency: {
-                currency: majorCurrency,
-                amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
-            },
-            majorToTargetCurrencyExchangeRate: {
-                currency: targetCurrency,
-                amount: majorToTargetCurrencyExchangeRate,
-            },
-            moneyInMajorCurrencyPercent: Math.min(
-                1,
-                (totalOfAccountsInOtherCurrenciesInMajorCurrency * majorToTargetCurrencyExchangeRate) /
-                    totalInTargetCurrency,
-            ),
-
-            totalInMajorCurrency: {
-                currency: majorCurrency,
-                amount: totalInTargetCurrency / majorToTargetCurrencyExchangeRate,
-            },
-
-            deltaFromPreviuosReportInTargetCurrency: {
-                currency: targetCurrency,
-                amount: 0,
-            },
-
-            deltaPerMonthAverageInTargetCurrency: {
-                currency: targetCurrency,
-                amount: 0,
-            },
-
-            deltaFromPreviuosReportPercent: 0,
-
-            createdAt: DateTime.fromISO(hItem.createdAt),
-        };
-    });
-
-    for (let i = 0; i < res.length - 1; ++i) {
-        const current = res[i];
-        const prev = res[i + 1];
-
-        if (current && prev) {
-            current.deltaFromPreviuosReportInTargetCurrency.amount =
-                current.totalInTargetCurrency.amount - prev.totalInTargetCurrency.amount;
-
-            current.deltaFromPreviuosReportPercent =
-                current.deltaFromPreviuosReportInTargetCurrency.amount / prev.totalInTargetCurrency.amount;
-
-            current.deltaPerMonthAverageInTargetCurrency.amount =
-                (current.deltaFromPreviuosReportInTargetCurrency.amount /
-                    current.createdAt.diff(prev.createdAt).as('days')) *
-                (365 / 12);
-        }
-    }
-
-    return res;
-});
+        return res;
+    },
+);
