@@ -1,27 +1,84 @@
-import { type Dispatch, type SetStateAction, useState, useMemo } from 'react';
+import { DateTime } from 'luxon';
+import { useCallback, useMemo } from 'react';
+import { UseFormReturn } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
-import { type TCurrency } from '@/entites';
-import { requiredCurrencies } from '@/settings';
-import { getPreviouslyUsedCurrencies } from '@/store/history';
+import { TAccount, TReport } from '@/entites';
+import { getAccountByIdMap } from '@/store/buh';
+import { formatNumber } from '@/utils/format';
 
-export const useCurrencies = () => {
-    const fromHistory = useSelector(getPreviouslyUsedCurrencies);
+import { getCurrencyByAccountIdMap, getMostRecentReport } from './selector';
+import { buildFormExchangeRates, sortBalances } from './utils';
+import { TForm, TFormAccountBalance } from './validation';
 
-    const [current, setCurrent] = useState<TCurrency[]>([]);
+export const useDefaultValues = (reportToEdit?: TReport): TForm => {
+    const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
+    const previousReport = useSelector(getMostRecentReport);
 
-    const res = useMemo<TCurrency[]>(() => {
-        const union = [...requiredCurrencies, ...fromHistory, ...current];
+    return useMemo(() => {
+        const balances: TFormAccountBalance[] = (reportToEdit?.balances ?? previousReport?.balances ?? []).map(
+            (accountBalance) => ({
+                accountId: accountBalance.accountId,
+                formula: reportToEdit ? formatNumber(accountBalance.balance) : '',
+            }),
+        );
 
-        const set = new Set<TCurrency['isoCode']>([]);
+        const exchangeRates = buildFormExchangeRates(
+            (reportToEdit?.exchangeRates ?? []).map(({ currencyId, quote }) => ({
+                currencyId,
+                formula: formatNumber(quote),
+            })),
 
-        return union.filter(({ isoCode }) => {
-            if (set.has(isoCode)) return false;
+            balances,
+            currencyByAccountId,
+        );
 
-            set.add(isoCode);
-            return true;
-        });
-    }, [fromHistory, current]);
+        return {
+            balances,
+            exchangeRates,
+            createdAt: DateTime.fromISO(
+                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
+            ) as unknown as string,
+        };
+    }, [currencyByAccountId, reportToEdit, previousReport, buildFormExchangeRates, formatNumber]);
+};
 
-    return [res, setCurrent] as [TCurrency[], Dispatch<SetStateAction<TCurrency[]>>];
+export const useAccountActions = (form: UseFormReturn<TForm>) => {
+    const accountById = useSelector(getAccountByIdMap);
+    const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
+
+    const updateForm = (balances: TFormAccountBalance[]) => {
+        form.setValue('balances', balances);
+
+        form.setValue(
+            'exchangeRates',
+            buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances, currencyByAccountId),
+        );
+    };
+
+    const add = useCallback(
+        (account: TAccount) => {
+            const accountBalance = {
+                accountId: account.id,
+                formula: '',
+            };
+
+            const balances = form.getValues('balances') ?? [];
+            balances.push(accountBalance);
+
+            updateForm(sortBalances(balances, accountById));
+        },
+        [form, currencyByAccountId],
+    );
+
+    const remove = useCallback(
+        (accountToRemove: TAccount) => {
+            updateForm(
+                (form.getValues('balances') ?? []).filter((balance) => balance.accountId !== accountToRemove.id),
+            );
+        },
+        [form],
+    );
+
+    return [add, remove];
 };

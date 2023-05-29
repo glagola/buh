@@ -17,12 +17,6 @@ import * as S from './_styles';
 import ExpressionInput from './expression-input';
 import { TFormAccountBalance, type TForm } from './validation';
 
-type TProps = {
-    currency: TCurrency;
-    onAdd: (account: TAccount) => void;
-    onRemove: (account: TAccount) => void;
-};
-
 const useArchivedAccounts = (currency: TCurrency, balances: TFormAccountBalance[]): TAccount[] => {
     const accountsByCurrencyId = useSelector(getAccountsByCurrencyId);
 
@@ -34,6 +28,12 @@ const useArchivedAccounts = (currency: TCurrency, balances: TFormAccountBalance[
             .filter(({ id }) => !inUsage.has(id))
             .sort(compareDateTime((item) => DateTime.fromISO(item.createdAt)));
     }, [accountsByCurrencyId, balances, currency.id]);
+};
+
+type TProps = {
+    currency: TCurrency;
+    onAdd: (account: TAccount) => void;
+    onRemove: (account: TAccount) => void;
 };
 
 const AccountsGroupedByCurrency = (props: TProps) => {
