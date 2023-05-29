@@ -162,6 +162,7 @@ const ReportFormPage = () => {
 
         dispatch(
             actions.storeReport({
+                id: reportToEdit?.id,
                 balances,
                 exchangeRates,
                 createdAt: data.createdAt,

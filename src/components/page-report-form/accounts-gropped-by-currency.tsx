@@ -15,7 +15,6 @@ import { compareDateTime } from '@/utils/time';
 
 import * as S from './_styles';
 import ExpressionInput from './expression-input';
-import { getCurrencyByAccountIdMap } from './selector';
 import { TFormAccountBalance, type TForm } from './validation';
 
 type TProps = {
@@ -43,14 +42,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
 
     useWatch({ control: form.control, name: 'balances' });
 
-    const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
-    const balances = (form.getValues('balances') ?? []).filter((acc) => {
-        const currency = currencyByAccountId.get(acc.accountId);
-
-        if (!currency) return false;
-
-        return currency.id === props.currency.id;
-    });
+    const balances = form.getValues('balances') ?? [];
     const archivedAccounts = useArchivedAccounts(props.currency, balances);
 
     const accountById = useSelector(getAccountByIdMap);
@@ -86,7 +78,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                     if (!account) return null;
 
                     const currency = currencyById.get(account.currencyId);
-                    if (!currency) return null;
+                    if (!currency || currency.id !== props.currency.id) return null;
 
                     return (
                         <Fragment key={account.id}>

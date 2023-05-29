@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { zAccount, zCurrency, zDateTime, zReportDetails } from '@/entites';
+import { zAccount, zCurrency } from '@/entites';
 import { safeEvaluate } from '@/utils/expression';
 
 const zFormula = z.string().refine((value) => undefined !== safeEvaluate(value), 'Must be valid math expression');
@@ -19,7 +19,7 @@ const zFormExchangeRate = z.object({
 });
 
 export const zForm = z.object({
-    createdAt: zDateTime.optional(),
+    createdAt: z.coerce.string().datetime({ offset: true }),
     balances: z.array(zFormAccountBalance).min(1),
     exchangeRates: z.array(zFormExchangeRate).min(1),
 });

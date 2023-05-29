@@ -14,8 +14,6 @@ const CurrenciesQuotes = () => {
     const currencyById = useSelector(getCurrencyByIdMap);
     const exchangeRates = form.getValues('exchangeRates');
 
-    console.log({ exchangeRates });
-
     return (
         <Stack spacing={2}>
             <Typography
@@ -31,7 +29,8 @@ const CurrenciesQuotes = () => {
                 return (
                     <ExpressionInput
                         key={currency.isoCode}
-                        name={`quotes.${index}.formula`}
+                        control={form.control}
+                        name={`exchangeRates.${index}.formula`}
                         label={`Price of 1 ${currency.isoCode} in Abstract currency`}
                     />
                 );
