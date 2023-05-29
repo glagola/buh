@@ -10,181 +10,171 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
-import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
+import { TAccount, TAccountBalance, TCurrency, TExchangeRate, TReport } from '@/entites';
 import { requiredCurrencies } from '@/settings';
-import {
-    getArchivedAccountsGroupByCurrency,
-    getPreviouslyUsedCurrencies,
-    getRecentlyUsedAccounts,
-    reportById,
-} from '@/store/history';
-import { actions } from '@/store/history';
+import { actions, getAccountByIdMap, getReportByIdMap } from '@/store/buh';
 import { evaluateForSure } from '@/utils/expression';
 import { formatNumber } from '@/utils/format';
-import { now } from '@/utils/time';
-import { generateUUID } from '@/utils/uuid';
 
+import * as S from './_styles';
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
-import { useCurrencies } from './hooks';
 import AddAccountModal from './modal/modal-add-account';
 import AddCurrencyModal from './modal/modal-add-currency';
-import { currenciesOfAccounts, uniqueCurrencies } from './utils';
-import {
-    historyItemFormSchema,
-    type TCurrencyQuoteByFormula,
-    type TAccountBalanceByCurrency,
-    type THistoryItemForm,
-    type TAccountBalance,
-} from './validation';
+import { getCurrenciesToShow, getCurrencyByAccountIdMap, getMostRecentReport } from './selector';
+import { TForm, TFormAccountBalance, TFormExchangeRate, zForm } from './validation';
 
-const buildCurrencyQuotes = (
-    accounts: TAccountBalanceByCurrency,
-    previous: TCurrencyQuoteByFormula[] = [],
-): TCurrencyQuoteByFormula[] => {
-    const formulaByCurrencyISOCode = new Map<
-        TCurrencyQuoteByFormula['currency']['isoCode'],
-        TCurrencyQuoteByFormula['formula']
-    >(previous.map(({ currency: { isoCode }, formula }) => [isoCode, formula]));
+function buildFormExchangeRates(
+    current: TFormExchangeRate[],
+    balances: TFormAccountBalance[],
+    currencyByAccountId: Map<TFormAccountBalance['accountId'], TCurrency>,
+): TFormExchangeRate[] {
+    const unqiueCurrencies = _.uniqBy(
+        [
+            ...requiredCurrencies,
+            ...balances.reduce<TCurrency[]>((res, { accountId }) => {
+                const currency = currencyByAccountId.get(accountId);
+                if (currency) {
+                    res.push(currency);
+                }
 
-    return uniqueCurrencies(requiredCurrencies, currenciesOfAccounts(accounts)).map((currency) => ({
-        currency,
-        formula: formulaByCurrencyISOCode.get(currency.isoCode) ?? '',
+                return res;
+            }, []),
+        ],
+        (currency) => currency.id,
+    );
+
+    const formulaByCurrencyId = new Map(current.map((item) => [item.currencyId, item.formula]));
+
+    return unqiueCurrencies.map(({ id: currencyId }) => ({
+        currencyId,
+        formula: formulaByCurrencyId.get(currencyId) ?? '',
     }));
-};
+}
 
-const sortBalances = (accounts: TAccountBalance[]) => {
-    accounts.sort((a, b) => a.account.title.localeCompare(b.account.title));
+const useDefaultValues = (
+    currencyByAccountId: Map<TAccount['id'], TCurrency>,
+    reportToEdit?: TReport,
+    previousReport?: TReport,
+): TForm =>
+    useMemo(() => {
+        const balances: TFormAccountBalance[] = (reportToEdit?.balances ?? previousReport?.balances ?? []).map(
+            (accountBalance) => ({
+                accountId: accountBalance.accountId,
+                formula: reportToEdit ? formatNumber(accountBalance.balance) : '',
+            }),
+        );
 
-    return accounts;
-};
+        const exchangeRates = buildFormExchangeRates(
+            (reportToEdit?.exchangeRates ?? []).map(({ currencyId, quote }) => ({
+                currencyId,
+                formula: formatNumber(quote),
+            })),
+
+            balances,
+            currencyByAccountId,
+        );
+
+        return {
+            balances,
+            exchangeRates,
+            createdAt: DateTime.fromISO(
+                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
+            ) as unknown as string,
+        };
+    }, [currencyByAccountId, reportToEdit, previousReport, buildFormExchangeRates, formatNumber]);
+
+const sortBalances = (accounts: TFormAccountBalance[], accountById: Map<TAccount['id'], TAccount>) =>
+    accounts.sort((a, b) => {
+        const _a = accountById.get(a.accountId);
+        const _b = accountById.get(b.accountId);
+
+        if (!_a || !_b) return 0;
+
+        return _a.title.localeCompare(_b.title);
+    });
 
 const ReportFormPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
-    const recentlyUsedAccounts = useSelector(getRecentlyUsedAccounts);
-    const archivedAccontsByCurrency = useSelector(getArchivedAccountsGroupByCurrency);
+    const reportById = useSelector(getReportByIdMap);
+    const accountById = useSelector(getAccountByIdMap);
+    const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
 
-    const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
-    const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
+    const { reportId: reportToEditId } = useParams();
+    const reportToEdit = reportToEditId ? reportById.get(reportToEditId) : undefined;
 
-    const { reportId } = useParams();
-    const _reportById = useSelector(reportById);
-    const reportToEdit = undefined === reportId ? undefined : _reportById.get(reportId);
+    const mostRecentReport = useSelector(getMostRecentReport);
+    const defaultValues = useDefaultValues(currencyByAccountId, reportToEdit, mostRecentReport);
 
-    const defaultValues = useMemo(() => {
-        const balances = reportToEdit
-            ? reportToEdit.accountBalances.map(({ balance, ...rest }) => ({
-                  ...rest,
-                  formula: formatNumber(balance),
-              }))
-            : recentlyUsedAccounts.map((account) => ({ account, formula: '' }));
-
-        const accounts = _.groupBy(balances, (s) => s.account.currency.isoCode);
-
-        for (const { isoCode } of previouslyUsedCurrencies) {
-            if (!(isoCode in accounts)) {
-                accounts[isoCode] = [];
-            }
-        }
-
-        return {
-            accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
-            quotes: buildCurrencyQuotes(
-                accounts,
-                reportToEdit?.quotes.map(({ quote, ...rest }) => ({ ...rest, formula: formatNumber(quote) })),
-            ),
-            createdAt: DateTime.fromISO(
-                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
-            ) as unknown as string,
-        };
-    }, [recentlyUsedAccounts, previouslyUsedCurrencies, reportToEdit]);
-
-    const form = useForm<THistoryItemForm>({
+    const form = useForm<TForm>({
         defaultValues,
-        resolver: zodResolver(historyItemFormSchema),
+        resolver: zodResolver(zForm),
         mode: 'all',
     });
 
+    const updateForm = (balances: TFormAccountBalance[]) => {
+        form.setValue('balances', balances);
+
+        form.setValue(
+            'exchangeRates',
+            buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances, currencyByAccountId),
+        );
+    };
+
+    const handleAccountAdd = useCallback(
+        (account: TAccount) => {
+            const accountBalance = {
+                accountId: account.id,
+                formula: '',
+            };
+
+            const balances = form.getValues('balances') ?? [];
+            balances.push(accountBalance);
+
+            updateForm(sortBalances(balances, accountById));
+        },
+        [form, currencyByAccountId],
+    );
+
+    const handleAccountRemove = useCallback(
+        (accountToRemove: TAccount) => {
+            updateForm(
+                (form.getValues('balances') ?? []).filter((balance) => balance.accountId !== accountToRemove.id),
+            );
+        },
+        [form],
+    );
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const handleSubmit = (data: THistoryItemForm): void => {
-        const accounts = Object.values(data.accounts)
-            .flat(1)
-            .map(({ account, formula }) => ({
-                account,
-                balance: evaluateForSure(formula),
-            }));
+    const handleSubmit = (data: TForm): void => {
+        const balances: TAccountBalance[] = data.balances.map(({ accountId, formula }) => ({
+            accountId,
+            balance: evaluateForSure(formula),
+        }));
 
-        const quotes = data.quotes.map(({ formula, currency }) => ({
-            currency,
+        const exchangeRates: TExchangeRate[] = data.exchangeRates.map(({ formula, currencyId }) => ({
+            currencyId,
             quote: evaluateForSure(formula),
         }));
 
         dispatch(
-            actions.storeHistoryItem({
-                id: reportToEdit?.id ?? generateUUID(),
-                quotes,
-                accountBalances: accounts,
+            actions.storeReport({
+                balances,
+                exchangeRates,
                 createdAt: data.createdAt,
             }),
         );
         navigate('/');
     };
 
-    const handleAccountAdd = useCallback(
-        (account: TAccount) => {
-            const accountBalance = {
-                account,
-                formula: '',
-            };
-            const currencyIsoCode = account.currency.isoCode;
+    const currencies = useSelector(getCurrenciesToShow);
 
-            const balances = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
-            balances.push(accountBalance);
-            form.setValue(`accounts.${currencyIsoCode}`, sortBalances(balances));
-
-            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
-        },
-        [form],
-    );
-
-    const handleAccountRemove = useCallback(
-        (account: TAccount) => {
-            const isoCode = account.currency.isoCode;
-            const balances = form.getValues(`accounts.${isoCode}`) ?? [];
-
-            form.setValue(
-                `accounts.${isoCode}`,
-                balances.filter((accountBalance) => accountBalance.account.id !== account.id),
-            );
-
-            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
-        },
-        [form],
-    );
-
-    const handleRawAccountAdd = useCallback(
-        (rawAccount: TRawAccountDetails) => {
-            toggleNewAccountModal();
-            handleAccountAdd({
-                ...rawAccount,
-                id: rawAccount.title,
-                createdAt: now(),
-            });
-        },
-        [handleAccountAdd, toggleNewAccountModal],
-    );
-
-    const handleCurrencyAdd = useCallback(
-        (currency: TCurrency) => {
-            form.setValue(`accounts.${currency.isoCode}`, []);
-            setCurrentCurrencies((currencies) => [...currencies, currency]);
-            toggleNewCurrencyModal();
-        },
-        [form, toggleNewCurrencyModal, setCurrentCurrencies],
-    );
+    if (reportToEditId && !reportToEdit) {
+        return navigate('/');
+    }
 
     return (
         <>
@@ -220,18 +210,16 @@ const ReportFormPage = () => {
                                 format='dd/LL/yyyy'
                             />
 
-                            <Stack spacing={3}>
-                                {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
+                            <S.Table>
+                                {currencies.map((currency) => (
                                     <AccountsGroupedByCurrency
-                                        key={isoCode}
-                                        title={`Accounts in ${isoCode}`}
-                                        currency={{ isoCode }}
-                                        archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
+                                        key={currency.id}
+                                        currency={currency}
                                         onAdd={handleAccountAdd}
                                         onRemove={handleAccountRemove}
                                     />
                                 ))}
-                            </Stack>
+                            </S.Table>
                             <CurrenciesQuotes />
                             <Stack
                                 direction='row'
@@ -265,17 +253,14 @@ const ReportFormPage = () => {
             </Container>
 
             <AddAccountModal
-                currencies={currentCurrencies}
                 open={openNewAccountModal}
-                onCancel={toggleNewAccountModal}
-                onSuccess={handleRawAccountAdd}
+                onClose={toggleNewAccountModal}
+                onAdd={handleAccountAdd}
             />
 
             <AddCurrencyModal
                 open={openNewCurrencyModal}
-                existingCurrencies={currentCurrencies}
-                onCancel={toggleNewCurrencyModal}
-                onSuccess={handleCurrencyAdd}
+                onClose={toggleNewCurrencyModal}
             />
         </>
     );

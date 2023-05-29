@@ -2,9 +2,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { type FC, useCallback, useMemo } from 'react';
 import { TextFieldElement, useForm } from 'react-hook-form-mui';
+import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 
-import { type TCurrency, ZCurrencyISOCode } from '@/entites';
+import { type TCurrency, zCurrencyISOCode, TRawCurrency } from '@/entites';
+import { actions, getCurrencies } from '@/store/buh';
 
 const styleDialogTitle = {
     borderWidth: 1,
@@ -18,24 +20,26 @@ const styleDialogActions = {
 
 type TProps = {
     open: boolean;
-    existingCurrencies: TCurrency[];
-    onCancel: () => void;
-    onSuccess: (rawCurrency: TCurrency) => void;
+    onClose: () => void;
+};
+
+const useValidation = () => {
+    const currencies = useSelector(getCurrencies);
+
+    return useMemo(() => {
+        const usedIsoCodes = currencies.reduce((res, { isoCode }) => res.add(isoCode), new Set());
+
+        return zodResolver(
+            z.object({
+                isoCode: zCurrencyISOCode.refine((value) => !usedIsoCodes.has(value), 'Already exists'),
+            }),
+        );
+    }, [currencies]);
 };
 
 const AddCurrencyModal: FC<TProps> = (props) => {
-    const resolver = useMemo(
-        () =>
-            zodResolver(
-                z.object({
-                    isoCode: ZCurrencyISOCode.refine(
-                        (value) => !props.existingCurrencies.some(({ isoCode }) => isoCode === value),
-                        'Already exists',
-                    ),
-                }),
-            ),
-        [props.existingCurrencies],
-    );
+    const resolver = useValidation();
+    const dispatch = useDispatch();
 
     const form = useForm<TCurrency>({
         resolver,
@@ -50,7 +54,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
     return (
         <Dialog
             open={props.open}
-            onClose={props.onCancel}
+            onClose={props.onClose}
             fullWidth
             maxWidth='sm'
             onAnimationEnd={handleDialogAnimationEnd}
@@ -62,7 +66,12 @@ const AddCurrencyModal: FC<TProps> = (props) => {
             >
                 Add currency
             </DialogTitle>
-            <form onSubmit={form.handleSubmit(props.onSuccess)}>
+            <form
+                onSubmit={form.handleSubmit((data: TRawCurrency) => {
+                    dispatch(actions.storeCurrency(data));
+                    props.onClose();
+                })}
+            >
                 <DialogContent>
                     <TextFieldElement
                         fullWidth
@@ -74,7 +83,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
                 <DialogActions sx={styleDialogActions}>
                     <Button
                         variant='text'
-                        onClick={props.onCancel}
+                        onClick={props.onClose}
                     >
                         Cancel
                     </Button>

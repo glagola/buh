@@ -3,8 +3,7 @@ import { DateTime } from 'luxon';
 
 import { type TCurrency, type TExchangeRate } from '@/entites';
 import { majorCurrency, targetCurrency } from '@/settings';
-import { getAccountByIdMap, getCurrencyByIdMap, getReports } from '@/store/buh';
-import { compareDateTime } from '@/utils/time';
+import { getAccountByIdMap, getCurrencyByIdMap, getReportsChronologically } from '@/store/buh';
 
 const buildConverter = (quotes: TExchangeRate[]) => {
     const rates = new Map<TCurrency['id'], TExchangeRate['quote']>(quotes.map((q) => [q.currencyId, q.quote]));
@@ -21,12 +20,8 @@ const buildConverter = (quotes: TExchangeRate[]) => {
     };
 };
 
-const reportsChronologically = createSelector([getReports], (reports) =>
-    [...reports].sort(compareDateTime((item) => DateTime.fromISO(item.createdAt))),
-);
-
 export const prepareRows = createSelector(
-    [reportsChronologically, getAccountByIdMap, getCurrencyByIdMap],
+    [getReportsChronologically, getAccountByIdMap, getCurrencyByIdMap],
     (reports, accountById, currencyById) => {
         const res = reports.map((report) => {
             const exchange = buildConverter(report.exchangeRates);

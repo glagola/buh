@@ -1,9 +1,13 @@
 import { createAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import _ from 'lodash';
+import { DateTime } from 'luxon';
 
-import { TDBContainer, TBuh, TRawReport, TRawAccount, TEntity, TRawCurrency } from '@/entites';
+import { TDBContainer, TBuh, TRawReport, TRawAccount, TEntity, TRawCurrency, TAccount } from '@/entites';
+import { requiredCurrencies } from '@/settings';
 import { type TRootState } from '@/store';
 import { buildItemByIdMap } from '@/utils/entity';
+import { compareDateTime, nowStr } from '@/utils/time';
 import { generateUUID } from '@/utils/uuid';
 
 const initialState: TDBContainer = {
@@ -59,6 +63,7 @@ const slice = createSlice({
         },
 
         storeAccount(state, action: PayloadAction<TRawAccount>): void {
+            action.payload.createdAt ??= nowStr();
             state.db.accounts = createOrReplace(state.db.accounts, action.payload);
             state.isChanged = true;
         },
@@ -91,8 +96,10 @@ export const getIsDBChanged = (_state: TRootState): boolean => getSliceRoot(_sta
 const getDB = (_state: TRootState) => getSliceRoot(_state).db;
 
 export const getReports = (_state: TRootState) => getDB(_state).reports;
-const getAccounts = (_state: TRootState) => getDB(_state).accounts;
-const getCurrencies = (_state: TRootState) => getDB(_state).currencies;
+export const getAccounts = (_state: TRootState) => getDB(_state).accounts;
+export const getCurrencies = createSelector([getDB], ({ currencies }) =>
+    _.uniqBy([...requiredCurrencies, ...currencies], ({ id }) => id),
+);
 
 export const getReportByIdMap = createSelector([getReports], buildItemByIdMap);
 
@@ -125,4 +132,37 @@ export const getExportDB = createSelector(
             currencies,
         };
     },
+);
+
+export const getAccountLastUsageById = createSelector([getReports], (reports) => {
+    const res = new Map<TAccount['id'], DateTime>();
+
+    for (const { balances, createdAt } of reports) {
+        const reportCreatedAt = DateTime.fromISO(createdAt);
+
+        for (const { accountId } of balances) {
+            const prevCreatedAt = res.get(accountId);
+
+            if (undefined === prevCreatedAt || prevCreatedAt < reportCreatedAt) {
+                res.set(accountId, reportCreatedAt);
+            }
+        }
+    }
+
+    return res;
+});
+
+export const getAccountsByCurrencyId = createSelector([getAccounts], (accounts) =>
+    accounts.reduce((res, account) => {
+        const other = res.get(account.currencyId) ?? [];
+
+        other.push(account);
+        res.set(account.currencyId, other);
+
+        return res;
+    }, new Map<TAccount['currencyId'], TAccount[]>()),
+);
+
+export const getReportsChronologically = createSelector([getReports], (reports) =>
+    [...reports].sort(compareDateTime((report) => DateTime.fromISO(report.createdAt))),
 );

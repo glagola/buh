@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 const zId = z.string().uuid();
-const zDateTime = z.string().datetime({ offset: true });
+export const zDateTime = z.string().datetime({ offset: true });
 
-const zEntity = z.object({
+export const zEntity = z.object({
     id: zId,
 });
 
@@ -11,6 +11,10 @@ const zRawEntity = zEntity.partial();
 
 export type TRawEntity = z.infer<typeof zRawEntity>;
 export type TEntity = z.infer<typeof zEntity>;
+
+const zDBEntity = zEntity.extend({
+    createdAt: zDateTime,
+});
 
 export const zCurrencyISOCode = z
     .string()
@@ -31,36 +35,33 @@ const zExchangeRate = z.object({
 
 export type TExchangeRate = z.infer<typeof zExchangeRate>;
 
-export const zAccount = zEntity.extend({
-    title: z.string(),
+const zAccountDetails = z.object({
+    title: z.string().min(3),
     currencyId: zId,
-
-    createdAt: zDateTime,
 });
-export type TAccount = z.infer<typeof zAccount>;
 
-const zRawAccount = zAccount.extend({
-    id: zId.optional(),
-});
+export const zRawAccount = zAccountDetails.merge(zDBEntity.partial());
 export type TRawAccount = z.infer<typeof zRawAccount>;
+
+export const zAccount = zAccountDetails.merge(zDBEntity);
+export type TAccount = z.infer<typeof zAccount>;
 
 const zAccountBalance = z.object({
     accountId: zId,
     balance: z.number(),
 });
 
-const zReport = zEntity.extend({
-    balances: z.array(zAccountBalance),
-    exchangeRates: z.array(zExchangeRate),
-    createdAt: zDateTime,
+export type TAccountBalance = z.infer<typeof zAccountBalance>;
+
+export const zReportDetails = z.object({
+    balances: z.array(zAccountBalance).min(1),
+    exchangeRates: z.array(zExchangeRate).min(1),
 });
 
+const zReport = zReportDetails.merge(zDBEntity);
 export type TReport = z.infer<typeof zReport>;
 
-const zRawReport = zReport.extend({
-    id: zId.optional(),
-});
-
+export const zRawReport = zReportDetails.merge(zDBEntity.partial());
 export type TRawReport = z.infer<typeof zRawReport>;
 
 export const zBuh = z.object({
