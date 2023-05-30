@@ -15,7 +15,7 @@ import { compareDateTime } from '@/utils/time';
 
 import * as S from './_styles';
 import ExpressionInput from './expression-input';
-import { TFormAccountBalance, type TForm } from './validation';
+import { type TFormAccountBalance, type TForm } from './validation';
 
 const useArchivedAccounts = (currency: TCurrency, balances: TFormAccountBalance[]): TAccount[] => {
     const accountsByCurrencyId = useSelector(getAccountsByCurrencyId);
@@ -49,10 +49,12 @@ const AccountsGroupedByCurrency = (props: TProps) => {
     );
     const accountById = useSelector(getAccountByIdMap);
     balances.sort((a, b) => {
-        const _a = accountById.get(a.accountId)!.title;
-        const _b = accountById.get(b.accountId)!.title;
+        const _a = accountById.get(a.accountId);
+        const _b = accountById.get(b.accountId);
 
-        return _a.localeCompare(_b);
+        if (!_a || !_b) return 0;
+
+        return _a.title.localeCompare(_b.title);
     });
 
     const archivedAccounts = useArchivedAccounts(props.currency, balances);
@@ -85,12 +87,14 @@ const AccountsGroupedByCurrency = (props: TProps) => {
 
             {!!balances.length &&
                 balances.map((balance) => {
-                    const account = accountById.get(balance.accountId)!;
+                    const account = accountById.get(balance.accountId);
+                    if (!account) return null;
 
-                    const currency = currencyById.get(account.currencyId)!;
-                    if (currency.id !== props.currency.id) return null;
+                    const currency = currencyById.get(account.currencyId);
+                    if (!currency || currency.id !== props.currency.id) return null;
 
-                    const index = indexByAccountId.get(balance.accountId)!;
+                    const index = indexByAccountId.get(balance.accountId);
+                    if (undefined === index) return null;
 
                     return (
                         <Fragment key={account.id}>

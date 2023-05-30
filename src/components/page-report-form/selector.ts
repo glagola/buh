@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import _ from 'lodash';
 
-import { TAccount, TCurrency } from '@/entites';
+import { type TAccount, type TCurrency } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import { getAccounts, getCurrencies, getCurrencyByIdMap, getReportsChronologically } from '@/store/buh';
 

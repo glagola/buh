@@ -12,8 +12,10 @@
 //     'react-refresh/only-export-components': 'warn',
 //   },
 // }
+/* eslint-env node */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
+const project = path.join(__dirname, 'tsconfig.json');
 
 /** @type {import("eslint").Linter.Config} */
 const config = {
@@ -22,16 +24,16 @@ const config = {
             extends: ['plugin:@typescript-eslint/recommended-requiring-type-checking'],
             files: ['*.ts', '*.tsx'],
             parserOptions: {
-                project: path.join(__dirname, 'tsconfig.json'),
+                project,
             },
         },
     ],
     parser: '@typescript-eslint/parser',
     parserOptions: {
-        project: path.join(__dirname, 'tsconfig.json'),
+        project,
     },
     plugins: ['@typescript-eslint'],
-    extends: ['next/core-web-vitals', 'plugin:@typescript-eslint/recommended'],
+    extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:react-hooks/recommended'],
     rules: {
         '@typescript-eslint/consistent-type-imports': [
             'warn',

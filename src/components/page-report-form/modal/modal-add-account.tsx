@@ -3,9 +3,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from
 import { type FC } from 'react';
 import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
-import { z } from 'zod';
+import { type z } from 'zod';
 
-import { TAccount, TCurrency, zCurrency, zRawAccount } from '@/entites';
+import { type TAccount, type TCurrency, zCurrency, zRawAccount } from '@/entites';
 import { actions, getCurrencies } from '@/store/buh';
 import { nowStr } from '@/utils/time';
 import { generateUUID } from '@/utils/uuid';

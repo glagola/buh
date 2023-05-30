@@ -1,15 +1,15 @@
 import { DateTime } from 'luxon';
 import { useCallback, useMemo } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { type UseFormReturn } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
-import { TAccount, TReport } from '@/entites';
+import { type TAccount, type TReport } from '@/entites';
 import { getAccountByIdMap } from '@/store/buh';
 import { formatNumber } from '@/utils/format';
 
 import { getCurrencyByAccountIdMap, getMostRecentReport } from './selector';
 import { buildFormExchangeRates, sortBalances } from './utils';
-import { TForm, TFormAccountBalance } from './validation';
+import { type TForm, type TFormAccountBalance } from './validation';
 
 export const useDefaultValues = (reportToEdit?: TReport): TForm => {
     const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
@@ -40,21 +40,24 @@ export const useDefaultValues = (reportToEdit?: TReport): TForm => {
                 (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
             ) as unknown as string,
         };
-    }, [currencyByAccountId, reportToEdit, previousReport, buildFormExchangeRates, formatNumber]);
+    }, [currencyByAccountId, reportToEdit, previousReport]);
 };
 
 export const useAccountActions = (form: UseFormReturn<TForm>) => {
     const accountById = useSelector(getAccountByIdMap);
     const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
 
-    const updateForm = (balances: TFormAccountBalance[]) => {
-        form.setValue('balances', balances);
+    const updateForm = useCallback(
+        (balances: TFormAccountBalance[]) => {
+            form.setValue('balances', balances);
 
-        form.setValue(
-            'exchangeRates',
-            buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances, currencyByAccountId),
-        );
-    };
+            form.setValue(
+                'exchangeRates',
+                buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances, currencyByAccountId),
+            );
+        },
+        [currencyByAccountId, form],
+    );
 
     const add = useCallback(
         (account: TAccount) => {
@@ -68,7 +71,7 @@ export const useAccountActions = (form: UseFormReturn<TForm>) => {
 
             updateForm(sortBalances(balances, accountById));
         },
-        [form, currencyByAccountId],
+        [form, updateForm, accountById],
     );
 
     const remove = useCallback(
@@ -77,7 +80,7 @@ export const useAccountActions = (form: UseFormReturn<TForm>) => {
                 (form.getValues('balances') ?? []).filter((balance) => balance.accountId !== accountToRemove.id),
             );
         },
-        [form],
+        [form, updateForm],
     );
 
     return [add, remove];

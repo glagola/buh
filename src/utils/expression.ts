@@ -1,7 +1,6 @@
 import { evaluate } from 'mathjs';
 
-const sanitizeExpression = (expr: string | undefined): string =>
-    (expr ?? '').replace(/\s+/g, '').replace(/[\.,]/g, '.');
+const sanitizeExpression = (expr: string | undefined): string => (expr ?? '').replace(/\s+/g, '').replace(/[.,]/g, '.');
 
 export const safeEvaluate = (expr: string): number | undefined => {
     try {

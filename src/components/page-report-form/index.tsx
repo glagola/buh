@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
-import { TAccountBalance, TExchangeRate } from '@/entites';
+import { type TAccountBalance, type TExchangeRate } from '@/entites';
 import { actions, getReportByIdMap } from '@/store/buh';
 import { evaluateForSure } from '@/utils/expression';
 
@@ -18,7 +18,7 @@ import { useAccountActions, useDefaultValues } from './hooks';
 import AddAccountModal from './modal/modal-add-account';
 import AddCurrencyModal from './modal/modal-add-currency';
 import { getCurrenciesToShow } from './selector';
-import { TForm, zForm } from './validation';
+import { type TForm, zForm } from './validation';
 
 const ReportFormPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);

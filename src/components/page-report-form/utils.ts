@@ -1,9 +1,9 @@
 import { uniqBy } from 'lodash';
 
-import { TAccount, TCurrency } from '@/entites';
+import { type TAccount, type TCurrency } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 
-import { TFormAccountBalance, TFormExchangeRate } from './validation';
+import { type TFormAccountBalance, type TFormExchangeRate } from './validation';
 
 export function buildFormExchangeRates(
     current: TFormExchangeRate[],
