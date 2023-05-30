@@ -5,7 +5,7 @@ import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 
-import { TAccount, TCurrency, TRawAccount, zCurrency, zRawAccount } from '@/entites';
+import { TAccount, TCurrency, zCurrency, zRawAccount } from '@/entites';
 import { actions, getCurrencies } from '@/store/buh';
 import { nowStr } from '@/utils/time';
 import { generateUUID } from '@/utils/uuid';

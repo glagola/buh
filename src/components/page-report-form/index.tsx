@@ -64,7 +64,7 @@ const ReportFormPage = () => {
     const [handleAccountAdd, handleAccountRemove] = useAccountActions(form);
 
     if (reportToEditId && !reportToEdit) {
-        return navigate('/');
+        navigate('/');
     }
 
     return (
