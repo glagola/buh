@@ -1,11 +1,13 @@
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { Button } from '@mui/material';
 import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useDBExport } from '@/store/history';
+import { actions, getExportDB } from '@/store/buh';
 
 const ExportDB = () => {
-    const buh = useDBExport();
+    const buh = useSelector(getExportDB);
+    const dispatch = useDispatch();
 
     const handleExportDB = useCallback(() => {
         const fileData = JSON.stringify(buh, undefined, 4);
@@ -15,7 +17,9 @@ const ExportDB = () => {
         link.download = 'buh-history.json';
         link.href = url;
         link.click();
-    }, [buh]);
+
+        dispatch(actions.changesSaved());
+    }, [buh, dispatch]);
 
     return (
         <Button

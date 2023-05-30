@@ -1,9 +1,9 @@
 import { type DateTime } from 'luxon';
 
-import { type TAccount } from '@/entites';
+import { TCurrency } from '@/entites';
 
 export type TMoney = {
-    currency: TAccount['currency'];
+    currency: TCurrency;
     amount: number;
 };
 

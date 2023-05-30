@@ -9,7 +9,7 @@ import { columns, totalInTargetCurrencyHeader, totalOfAccountsInOtherCurrenciesI
 import ExportDB from './db-export';
 import ImportDB from './db-import';
 import LineChart from './line-chart';
-import { prepareRows } from './store-selectors';
+import { prepareRows } from './selector';
 
 const styles = {
     chart: { flexGrow: 1, width: '50%' },

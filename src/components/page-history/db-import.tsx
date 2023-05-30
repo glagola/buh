@@ -3,13 +3,13 @@ import { Button } from '@mui/material';
 import { type ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { ZBuh, type TBuh } from '@/entites';
-import { actions } from '@/store/history';
+import { zBuh, type TBuh } from '@/entites';
+import { actions } from '@/store/buh';
 
 const parse = (s: string): TBuh => {
     const obj = JSON.parse(s) as unknown;
 
-    return ZBuh.parse(obj);
+    return zBuh.parse(obj);
 };
 
 const readFileContent = async (file: File) =>

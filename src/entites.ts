@@ -1,68 +1,77 @@
 import { z } from 'zod';
 
-const ZUUID = z.string().uuid();
+const zId = z.string().uuid();
+export const zDateTime = z.string().datetime({ offset: true });
 
-const ZHistoryItemId = ZUUID;
+export const zEntity = z.object({
+    id: zId,
+});
 
-export type THistoryItemId = z.infer<typeof ZHistoryItemId>;
+const zRawEntity = zEntity.partial();
 
-export const ZCurrencyISOCode = z
+export type TRawEntity = z.infer<typeof zRawEntity>;
+export type TEntity = z.infer<typeof zEntity>;
+
+const zDBEntity = zEntity.extend({
+    createdAt: zDateTime,
+});
+
+export const zCurrencyISOCode = z
     .string()
     .min(3)
     .refine((value) => value.toUpperCase() === value, 'Must be in uppercase');
 
-export const ZCurrency = z.object({
-    isoCode: ZCurrencyISOCode,
+export const zCurrency = zEntity.extend({
+    isoCode: zCurrencyISOCode,
 });
-export type TCurrency = z.infer<typeof ZCurrency>;
+const zRawCurrency = zCurrency.merge(zRawEntity);
+export type TCurrency = z.infer<typeof zCurrency>;
+export type TRawCurrency = z.infer<typeof zRawCurrency>;
 
-const ZCurrencyQuote = z.object({
-    currency: ZCurrency,
+const zExchangeRate = z.object({
+    currencyId: zId,
     quote: z.number().refine((value) => value > 0, 'Must be above 0'),
 });
 
-export type TCurrencyQuote = z.infer<typeof ZCurrencyQuote>;
+export type TExchangeRate = z.infer<typeof zExchangeRate>;
 
-const ZRawAccountDetails = z.object({
-    title: z.string(),
-    currency: ZCurrency,
+const zAccountDetails = z.object({
+    title: z.string().min(3),
+    currencyId: zId,
 });
-export type TRawAccountDetails = z.infer<typeof ZRawAccountDetails>;
 
-export const ZAccount = z.object({
-    title: z.string(),
-    currency: ZCurrency,
-    id: z.string(),
-    createdAt: z.string().datetime({ offset: true }),
-});
-export type TAccount = z.infer<typeof ZAccount>;
+export const zRawAccount = zAccountDetails.merge(zDBEntity.partial());
+export type TRawAccount = z.infer<typeof zRawAccount>;
 
-const ZArchivedAccount = z.object({
-    account: ZAccount,
-    archivedAt: z.string().datetime({ offset: true }),
-});
-export type TArchivedAccount = z.infer<typeof ZArchivedAccount>;
+export const zAccount = zAccountDetails.merge(zDBEntity);
+export type TAccount = z.infer<typeof zAccount>;
 
-const ZAccountHistoryBalance = z.object({
-    account: ZAccount,
+const zAccountBalance = z.object({
+    accountId: zId,
     balance: z.number(),
 });
 
-const ZHistoryItem = z.object({
-    id: ZHistoryItemId.optional(),
-    accountBalances: z.array(ZAccountHistoryBalance),
-    quotes: z.array(ZCurrencyQuote),
-    createdAt: z.string().datetime({ offset: true }),
+export type TAccountBalance = z.infer<typeof zAccountBalance>;
+
+export const zReportDetails = z.object({
+    balances: z.array(zAccountBalance).min(1),
+    exchangeRates: z.array(zExchangeRate).min(1),
 });
 
-export type THistoryItem = z.infer<typeof ZHistoryItem>;
+const zReport = zReportDetails.merge(zDBEntity);
+export type TReport = z.infer<typeof zReport>;
 
-export const ZBuh = z.object({
-    history: z.array(ZHistoryItem),
+export const zRawReport = zReportDetails.merge(zDBEntity.partial());
+export type TRawReport = z.infer<typeof zRawReport>;
+
+export const zBuh = z.object({
+    reports: z.array(zReport),
+    accounts: z.array(zAccount),
+    currencies: z.array(zCurrency),
 });
-export type TBuh = z.infer<typeof ZBuh>;
+export type TBuh = z.infer<typeof zBuh>;
 
-export type TBuhContainer = {
+export type TDBContainer = {
     db: TBuh;
     isChanged: boolean;
 };

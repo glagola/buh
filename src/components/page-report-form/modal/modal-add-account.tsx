@@ -2,9 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from '@mui/material';
 import { type FC } from 'react';
 import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook-form-mui';
-import { z } from 'zod';
+import { useDispatch, useSelector } from 'react-redux';
+import { type z } from 'zod';
 
-import type { TRawAccountDetails, TCurrency } from '@/entites';
+import { type TAccount, type TCurrency, zCurrency, zRawAccount } from '@/entites';
+import { actions, getCurrencies } from '@/store/buh';
+import { nowStr } from '@/utils/time';
+import { generateUUID } from '@/utils/uuid';
 
 const styleDialogTitle = {
     borderWidth: 1,
@@ -12,7 +16,7 @@ const styleDialogTitle = {
 
 const autocompleteProps = {
     getOptionLabel: (currency: TCurrency) => currency.isoCode,
-    isOptionEqualToValue: (option: TCurrency, value: TCurrency) => option.isoCode === value.isoCode,
+    isOptionEqualToValue: (option: TCurrency, value: TCurrency) => option.id === value.id,
 };
 
 const styleDialogActions = {
@@ -21,80 +25,89 @@ const styleDialogActions = {
     pt: 0,
 };
 
-const resolver = zodResolver(
-    z.object({
-        title: z.string().min(3),
-        currency: z.object(
-            {
-                isoCode: z.string().min(3),
-            },
-            {
-                invalid_type_error: 'Required',
-            },
-        ),
-    }),
-);
+const zForm = zRawAccount.omit({ currencyId: true }).extend({
+    currency: zCurrency,
+});
+
+type TForm = z.infer<typeof zForm>;
+
+const resolver = zodResolver(zForm);
 
 type TProps = {
     open: boolean;
-    currencies: TCurrency[];
-    onCancel: () => void;
-    onSuccess: (rawAccount: TRawAccountDetails) => void;
+    onClose: () => void;
+    onAdd: (account: TAccount) => void;
 };
 
-const AddAccountModal: FC<TProps> = (props) => (
-    <Dialog
-        open={props.open}
-        onClose={props.onCancel}
-        fullWidth
-        maxWidth='sm'
-    >
-        <DialogTitle
-            component='h2'
-            variant='h5'
-            sx={styleDialogTitle}
-        >
-            Add account
-        </DialogTitle>
-        <FormContainer
-            resolver={resolver}
-            mode='onBlur'
-            onSuccess={props.onSuccess}
-        >
-            <DialogContent>
-                <Stack
-                    direction='column'
-                    spacing={3}
-                >
-                    <TextFieldElement
-                        name='title'
-                        label='Title'
-                    />
+const AddAccountModal: FC<TProps> = (props) => {
+    const dispatch = useDispatch();
+    const currencies = useSelector(getCurrencies);
 
-                    <AutocompleteElement
-                        name='currency'
-                        label='Currency'
-                        autocompleteProps={autocompleteProps}
-                        options={props.currencies}
-                    />
-                </Stack>
-            </DialogContent>
-            <DialogActions sx={styleDialogActions}>
-                <Button
-                    variant='text'
-                    onClick={props.onCancel}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant='contained'
-                    type='submit'
-                >
-                    Add
-                </Button>
-            </DialogActions>
-        </FormContainer>
-    </Dialog>
-);
+    return (
+        <Dialog
+            open={props.open}
+            onClose={props.onClose}
+            fullWidth
+            maxWidth='sm'
+        >
+            <DialogTitle
+                component='h2'
+                variant='h5'
+                sx={styleDialogTitle}
+            >
+                Add account
+            </DialogTitle>
+            <FormContainer<TForm>
+                resolver={resolver}
+                mode='onBlur'
+                onSuccess={({ currency, ...rest }) => {
+                    const account: TAccount = {
+                        ...rest,
+                        id: generateUUID(),
+                        createdAt: nowStr(),
+                        currencyId: currency.id,
+                    };
+
+                    dispatch(actions.storeAccount(account));
+                    props.onAdd(account);
+                    props.onClose();
+                }}
+            >
+                <DialogContent>
+                    <Stack
+                        direction='column'
+                        spacing={3}
+                    >
+                        <TextFieldElement
+                            name='title'
+                            label='Title'
+                        />
+
+                        <AutocompleteElement
+                            name='currency'
+                            label='Currency'
+                            autocompleteProps={autocompleteProps}
+                            options={currencies}
+                        />
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={styleDialogActions}>
+                    <Button
+                        variant='text'
+                        onClick={props.onClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant='contained'
+                        type='submit'
+                    >
+                        Add
+                    </Button>
+                </DialogActions>
+            </FormContainer>
+        </Dialog>
+    );
+};
 
 export default AddAccountModal;

@@ -1,18 +1,44 @@
-import _ from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 
-import { type TCurrency } from '@/entites';
-import { isNonEmpty } from '@/utils/array';
+import { type TAccount, type TCurrency } from '@/entites';
+import { requiredCurrencies } from '@/settings';
 
-import { type TAccountBalanceByCurrency } from './validation';
+import { type TFormAccountBalance, type TFormExchangeRate } from './validation';
 
-export function currenciesOfAccounts(accountsBalancesByCurrency: TAccountBalanceByCurrency): TCurrency[] {
-    return Object.values(accountsBalancesByCurrency).reduce<TCurrency[]>((res, balances) => {
-        if (isNonEmpty(balances)) {
-            res.push(balances[0].account.currency);
-        }
-        return res;
-    }, []);
+export function buildFormExchangeRates(
+    current: TFormExchangeRate[],
+    balances: TFormAccountBalance[],
+    currencyByAccountId: Map<TFormAccountBalance['accountId'], TCurrency>,
+): TFormExchangeRate[] {
+    const unqiueCurrencies = uniqBy(
+        [
+            ...requiredCurrencies,
+            ...balances.reduce<TCurrency[]>((res, { accountId }) => {
+                const currency = currencyByAccountId.get(accountId);
+                if (currency) {
+                    res.push(currency);
+                }
+
+                return res;
+            }, []),
+        ],
+        (currency) => currency.id,
+    );
+
+    const formulaByCurrencyId = new Map(current.map((item) => [item.currencyId, item.formula]));
+
+    return unqiueCurrencies.map(({ id: currencyId }) => ({
+        currencyId,
+        formula: formulaByCurrencyId.get(currencyId) ?? '',
+    }));
 }
 
-export const uniqueCurrencies = (...sources: TCurrency[][]): TCurrency[] =>
-    _.uniqBy(sources.flat(1), ({ isoCode }) => isoCode);
+export const sortBalances = (accounts: TFormAccountBalance[], accountById: Map<TAccount['id'], TAccount>) =>
+    accounts.sort((a, b) => {
+        const _a = accountById.get(a.accountId);
+        const _b = accountById.get(b.accountId);
+
+        if (!_a || !_b) return 0;
+
+        return _a.title.localeCompare(_b.title);
+    });

@@ -1,35 +1,31 @@
 import { z } from 'zod';
 
-import { type TCurrency, ZAccount, ZCurrency, ZCurrencyISOCode } from '@/entites';
+import { zAccount, zCurrency } from '@/entites';
 import { safeEvaluate } from '@/utils/expression';
 
-const ZFormula = z.string().refine((value) => undefined !== safeEvaluate(value), 'Must be valid math expression');
+const zFormula = z.string().refine((value) => undefined !== safeEvaluate(value), 'Must be valid math expression');
 
-const ZAccountBalance = z.object({
-    account: ZAccount,
-    formula: ZFormula,
+const zFormAccountBalance = z.object({
+    accountId: zAccount.shape.id,
+    formula: zFormula,
 });
 
-const ZCurrencyQuoteFormula = z.object({
-    currency: ZCurrency,
-    formula: ZFormula.refine((value) => {
+const zFormExchangeRate = z.object({
+    currencyId: zCurrency.shape.id,
+    formula: zFormula.refine((value) => {
         const res = safeEvaluate(value);
         return undefined === res || 0 < res;
     }, 'Must be above 0'),
 });
 
-export const historyItemFormSchema = z.object({
+export const zForm = z.object({
     createdAt: z.coerce.string().datetime({ offset: true }),
-    accounts: z
-        .record(ZCurrencyISOCode, z.array(ZAccountBalance))
-        .refine((value) => JSON.stringify(value) !== '{}', 'Must have at least one account'),
-    quotes: z.array(ZCurrencyQuoteFormula),
+    balances: z.array(zFormAccountBalance).min(1),
+    exchangeRates: z.array(zFormExchangeRate).min(1),
 });
 
-export type TAccountBalance = z.infer<typeof ZAccountBalance>;
+export type TFormAccountBalance = z.infer<typeof zFormAccountBalance>;
 
-export type TCurrencyQuoteByFormula = z.infer<typeof ZCurrencyQuoteFormula>;
+export type TFormExchangeRate = z.infer<typeof zFormExchangeRate>;
 
-export type THistoryItemForm = z.infer<typeof historyItemFormSchema>;
-
-export type TAccountBalanceByCurrency = Record<TCurrency['isoCode'], TAccountBalance[]>;
+export type TForm = z.infer<typeof zForm>;

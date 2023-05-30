@@ -1,190 +1,71 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Container, Stack } from '@mui/material';
-import _ from 'lodash';
-import { DateTime } from 'luxon';
-import { useCallback, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { DatePickerElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useToggle } from 'react-use';
 
-import type { TAccount, TCurrency, TRawAccountDetails } from '@/entites';
-import { requiredCurrencies } from '@/settings';
-import {
-    getArchivedAccountsGroupByCurrency,
-    getPreviouslyUsedCurrencies,
-    getRecentlyUsedAccounts,
-    reportById,
-} from '@/store/history';
-import { actions } from '@/store/history';
+import { type TAccountBalance, type TExchangeRate } from '@/entites';
+import { actions, getReportByIdMap } from '@/store/buh';
 import { evaluateForSure } from '@/utils/expression';
-import { formatNumber } from '@/utils/format';
-import { now } from '@/utils/time';
-import { generateUUID } from '@/utils/uuid';
 
+import * as S from './_styles';
 import AccountsGroupedByCurrency from './accounts-gropped-by-currency';
 import CurrenciesQuotes from './currency-quotes';
-import { useCurrencies } from './hooks';
+import { useAccountActions, useDefaultValues } from './hooks';
 import AddAccountModal from './modal/modal-add-account';
 import AddCurrencyModal from './modal/modal-add-currency';
-import { currenciesOfAccounts, uniqueCurrencies } from './utils';
-import {
-    historyItemFormSchema,
-    type TCurrencyQuoteByFormula,
-    type TAccountBalanceByCurrency,
-    type THistoryItemForm,
-    type TAccountBalance,
-} from './validation';
-
-const buildCurrencyQuotes = (
-    accounts: TAccountBalanceByCurrency,
-    previous: TCurrencyQuoteByFormula[] = [],
-): TCurrencyQuoteByFormula[] => {
-    const formulaByCurrencyISOCode = new Map<
-        TCurrencyQuoteByFormula['currency']['isoCode'],
-        TCurrencyQuoteByFormula['formula']
-    >(previous.map(({ currency: { isoCode }, formula }) => [isoCode, formula]));
-
-    return uniqueCurrencies(requiredCurrencies, currenciesOfAccounts(accounts)).map((currency) => ({
-        currency,
-        formula: formulaByCurrencyISOCode.get(currency.isoCode) ?? '',
-    }));
-};
-
-const sortBalances = (accounts: TAccountBalance[]) => {
-    accounts.sort((a, b) => a.account.title.localeCompare(b.account.title));
-
-    return accounts;
-};
+import { getCurrenciesToShow } from './selector';
+import { type TForm, zForm } from './validation';
 
 const ReportFormPage = () => {
     const [openNewAccountModal, toggleNewAccountModal] = useToggle(false);
     const [openNewCurrencyModal, toggleNewCurrencyModal] = useToggle(false);
 
-    const recentlyUsedAccounts = useSelector(getRecentlyUsedAccounts);
-    const archivedAccontsByCurrency = useSelector(getArchivedAccountsGroupByCurrency);
+    const reportById = useSelector(getReportByIdMap);
 
-    const [currentCurrencies, setCurrentCurrencies] = useCurrencies();
-    const previouslyUsedCurrencies = useSelector(getPreviouslyUsedCurrencies);
-
-    const { reportId } = useParams();
-    const _reportById = useSelector(reportById);
-    const reportToEdit = undefined === reportId ? undefined : _reportById.get(reportId);
-
-    const defaultValues = useMemo(() => {
-        const balances = reportToEdit
-            ? reportToEdit.accountBalances.map(({ balance, ...rest }) => ({
-                  ...rest,
-                  formula: formatNumber(balance),
-              }))
-            : recentlyUsedAccounts.map((account) => ({ account, formula: '' }));
-
-        const accounts = _.groupBy(balances, (s) => s.account.currency.isoCode);
-
-        for (const { isoCode } of previouslyUsedCurrencies) {
-            if (!(isoCode in accounts)) {
-                accounts[isoCode] = [];
-            }
-        }
-
-        return {
-            accounts: _.fromPairs(_.toPairs(accounts).map(([key, items]) => [key, sortBalances(items)])),
-            quotes: buildCurrencyQuotes(
-                accounts,
-                reportToEdit?.quotes.map(({ quote, ...rest }) => ({ ...rest, formula: formatNumber(quote) })),
-            ),
-            createdAt: DateTime.fromISO(
-                (reportToEdit?.createdAt ?? DateTime.now().toISO()) as string,
-            ) as unknown as string,
-        };
-    }, [recentlyUsedAccounts, previouslyUsedCurrencies, reportToEdit]);
-
-    const form = useForm<THistoryItemForm>({
-        defaultValues,
-        resolver: zodResolver(historyItemFormSchema),
-        mode: 'all',
-    });
+    const { reportId: reportToEditId } = useParams();
+    const reportToEdit = reportToEditId ? reportById.get(reportToEditId) : undefined;
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const handleSubmit = (data: THistoryItemForm): void => {
-        const accounts = Object.values(data.accounts)
-            .flat(1)
-            .map(({ account, formula }) => ({
-                account,
-                balance: evaluateForSure(formula),
-            }));
+    const handleSubmit = (data: TForm): void => {
+        const balances: TAccountBalance[] = data.balances.map(({ accountId, formula }) => ({
+            accountId,
+            balance: evaluateForSure(formula),
+        }));
 
-        const quotes = data.quotes.map(({ formula, currency }) => ({
-            currency,
+        const exchangeRates: TExchangeRate[] = data.exchangeRates.map(({ formula, currencyId }) => ({
+            currencyId,
             quote: evaluateForSure(formula),
         }));
 
         dispatch(
-            actions.storeHistoryItem({
-                id: reportToEdit?.id ?? generateUUID(),
-                quotes,
-                accountBalances: accounts,
+            actions.storeReport({
+                id: reportToEdit?.id,
+                balances,
+                exchangeRates,
                 createdAt: data.createdAt,
             }),
         );
         navigate('/');
     };
 
-    const handleAccountAdd = useCallback(
-        (account: TAccount) => {
-            const accountBalance = {
-                account,
-                formula: '',
-            };
-            const currencyIsoCode = account.currency.isoCode;
+    const currencies = useSelector(getCurrenciesToShow);
 
-            const balances = form.getValues(`accounts.${currencyIsoCode}`) ?? [];
-            balances.push(accountBalance);
-            form.setValue(`accounts.${currencyIsoCode}`, sortBalances(balances));
+    const form = useForm<TForm>({
+        defaultValues: useDefaultValues(reportToEdit),
+        resolver: zodResolver(zForm),
+        mode: 'all',
+    });
 
-            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
-        },
-        [form],
-    );
+    const [handleAccountAdd, handleAccountRemove] = useAccountActions(form);
 
-    const handleAccountRemove = useCallback(
-        (account: TAccount) => {
-            const isoCode = account.currency.isoCode;
-            const balances = form.getValues(`accounts.${isoCode}`) ?? [];
-
-            form.setValue(
-                `accounts.${isoCode}`,
-                balances.filter((accountBalance) => accountBalance.account.id !== account.id),
-            );
-
-            form.setValue(`quotes`, buildCurrencyQuotes(form.getValues('accounts'), form.getValues('quotes')));
-        },
-        [form],
-    );
-
-    const handleRawAccountAdd = useCallback(
-        (rawAccount: TRawAccountDetails) => {
-            toggleNewAccountModal();
-            handleAccountAdd({
-                ...rawAccount,
-                id: rawAccount.title,
-                createdAt: now(),
-            });
-        },
-        [handleAccountAdd, toggleNewAccountModal],
-    );
-
-    const handleCurrencyAdd = useCallback(
-        (currency: TCurrency) => {
-            form.setValue(`accounts.${currency.isoCode}`, []);
-            setCurrentCurrencies((currencies) => [...currencies, currency]);
-            toggleNewCurrencyModal();
-        },
-        [form, toggleNewCurrencyModal, setCurrentCurrencies],
-    );
+    if (reportToEditId && !reportToEdit) {
+        navigate('/');
+    }
 
     return (
         <>
@@ -220,18 +101,16 @@ const ReportFormPage = () => {
                                 format='dd/LL/yyyy'
                             />
 
-                            <Stack spacing={3}>
-                                {Object.entries(form.getValues('accounts')).map(([isoCode]) => (
+                            <S.Table>
+                                {currencies.map((currency) => (
                                     <AccountsGroupedByCurrency
-                                        key={isoCode}
-                                        title={`Accounts in ${isoCode}`}
-                                        currency={{ isoCode }}
-                                        archivedAccounts={archivedAccontsByCurrency.get(isoCode) ?? []}
+                                        key={currency.id}
+                                        currency={currency}
                                         onAdd={handleAccountAdd}
                                         onRemove={handleAccountRemove}
                                     />
                                 ))}
-                            </Stack>
+                            </S.Table>
                             <CurrenciesQuotes />
                             <Stack
                                 direction='row'
@@ -265,17 +144,14 @@ const ReportFormPage = () => {
             </Container>
 
             <AddAccountModal
-                currencies={currentCurrencies}
                 open={openNewAccountModal}
-                onCancel={toggleNewAccountModal}
-                onSuccess={handleRawAccountAdd}
+                onClose={toggleNewAccountModal}
+                onAdd={handleAccountAdd}
             />
 
             <AddCurrencyModal
                 open={openNewCurrencyModal}
-                existingCurrencies={currentCurrencies}
-                onCancel={toggleNewCurrencyModal}
-                onSuccess={handleCurrencyAdd}
+                onClose={toggleNewCurrencyModal}
             />
         </>
     );
