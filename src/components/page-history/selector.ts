@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
 import { type TCurrency, type TExchangeRate } from '@/entites';
-import { majorCurrency, targetCurrency } from '@/settings';
+import { reserveCurrency, targetCurrency } from '@/settings';
 import { getAccountByIdMap, getCurrencyByIdMap, getReportsChronologically } from '@/store/buh';
 
 const buildConverter = (quotes: TExchangeRate[]) => {
@@ -42,11 +42,11 @@ export const prepareRows = createSelector(
                 if (targetCurrency.id === currency.id) {
                     totalOfAccountsInTargetCurrency += amountInTargetCurrency;
                 } else {
-                    totalOfAccountsInOtherCurrenciesInMajorCurrency += exchange(balance, currency, majorCurrency);
+                    totalOfAccountsInOtherCurrenciesInMajorCurrency += exchange(balance, currency, reserveCurrency);
                 }
             }
 
-            const majorToTargetCurrencyExchangeRate = exchange(1, majorCurrency, targetCurrency);
+            const majorToTargetCurrencyExchangeRate = exchange(1, reserveCurrency, targetCurrency);
 
             return {
                 id: report.id,
@@ -60,7 +60,7 @@ export const prepareRows = createSelector(
                     amount: totalOfAccountsInTargetCurrency,
                 },
                 totalOfAccountsInOtherCurrenciesInMajorCurrency: {
-                    currency: majorCurrency,
+                    currency: reserveCurrency,
                     amount: totalOfAccountsInOtherCurrenciesInMajorCurrency,
                 },
                 majorToTargetCurrencyExchangeRate: {
@@ -74,7 +74,7 @@ export const prepareRows = createSelector(
                 ),
 
                 totalInMajorCurrency: {
-                    currency: majorCurrency,
+                    currency: reserveCurrency,
                     amount: totalInTargetCurrency / majorToTargetCurrencyExchangeRate,
                 },
 

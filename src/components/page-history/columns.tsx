@@ -1,7 +1,7 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
 
-import { majorCurrency, targetCurrency } from '@/settings';
+import { reserveCurrency, targetCurrency } from '@/settings';
 import { formatMoneyWithCents } from '@/utils/format';
 
 import { type TRow, type TMoney } from './types';
@@ -25,7 +25,7 @@ export const totalInTargetCurrencyHeader = {
 export const totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader = {
     type: 'number',
     field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
-    headerName: `Non ${targetCurrency.isoCode} assets, ${majorCurrency.isoCode}`,
+    headerName: `Non ${targetCurrency.isoCode} assets, ${reserveCurrency.isoCode}`,
     valueGetter,
     valueFormatter: moneyFormatter,
     flex: 1,
@@ -94,7 +94,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'majorToTargetCurrencyExchangeRate',
-        headerName: `${majorCurrency.isoCode}/${targetCurrency.isoCode}`,
+        headerName: `${reserveCurrency.isoCode}/${targetCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -104,7 +104,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'totalInMajorCurrency',
-        headerName: `Total, ${majorCurrency.isoCode}`,
+        headerName: `Total, ${reserveCurrency.isoCode}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
