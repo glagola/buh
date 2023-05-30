@@ -48,7 +48,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
         new Map<TAccount['id'], number>(),
     );
     const accountById = useSelector(getAccountByIdMap);
-    balances.sort((a, b) => {
+    const sortedBalances = [...balances].sort((a, b) => {
         const _a = accountById.get(a.accountId);
         const _b = accountById.get(b.accountId);
 
@@ -85,8 +85,8 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                 </Stack>
             </S.Row>
 
-            {!!balances.length &&
-                balances.map((balance) => {
+            {!!sortedBalances.length &&
+                sortedBalances.map((balance) => {
                     const account = accountById.get(balance.accountId);
                     if (!account) return null;
 
