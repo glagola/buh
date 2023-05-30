@@ -43,9 +43,20 @@ const AccountsGroupedByCurrency = (props: TProps) => {
     useWatch({ control: form.control, name: 'balances' });
 
     const balances = form.getValues('balances') ?? [];
+    const indexByAccountId = balances.reduce(
+        (res, { accountId }, index) => res.set(accountId, index),
+        new Map<TAccount['id'], number>(),
+    );
+    const accountById = useSelector(getAccountByIdMap);
+    balances.sort((a, b) => {
+        const _a = accountById.get(a.accountId)!.title;
+        const _b = accountById.get(b.accountId)!.title;
+
+        return _a.localeCompare(_b);
+    });
+
     const archivedAccounts = useArchivedAccounts(props.currency, balances);
 
-    const accountById = useSelector(getAccountByIdMap);
     const currencyById = useSelector(getCurrencyByIdMap);
     const accountLastUsageById = useSelector(getAccountLastUsageById);
 
@@ -73,12 +84,13 @@ const AccountsGroupedByCurrency = (props: TProps) => {
             </S.Row>
 
             {!!balances.length &&
-                balances.map((balance, index) => {
-                    const account = accountById.get(balance.accountId);
-                    if (!account) return null;
+                balances.map((balance) => {
+                    const account = accountById.get(balance.accountId)!;
 
-                    const currency = currencyById.get(account.currencyId);
-                    if (!currency || currency.id !== props.currency.id) return null;
+                    const currency = currencyById.get(account.currencyId)!;
+                    if (currency.id !== props.currency.id) return null;
+
+                    const index = indexByAccountId.get(balance.accountId)!;
 
                     return (
                         <Fragment key={account.id}>
