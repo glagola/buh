@@ -1,9 +1,17 @@
 import { createAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import _ from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 import { DateTime } from 'luxon';
 
-import { TDBContainer, TBuh, TRawReport, TRawAccount, TEntity, TRawCurrency, TAccount } from '@/entites';
+import {
+    type TDBContainer,
+    type TBuh,
+    type TRawReport,
+    type TRawAccount,
+    type TEntity,
+    type TRawCurrency,
+    type TAccount,
+} from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import { type TRootState } from '@/store';
 import { buildItemByIdMap } from '@/utils/entity';
@@ -98,7 +106,7 @@ const getDB = (_state: TRootState) => getSliceRoot(_state).db;
 export const getReports = (_state: TRootState) => getDB(_state).reports;
 export const getAccounts = (_state: TRootState) => getDB(_state).accounts;
 export const getCurrencies = createSelector([getDB], ({ currencies }) =>
-    _.uniqBy([...requiredCurrencies, ...currencies], ({ id }) => id),
+    uniqBy([...requiredCurrencies, ...currencies], ({ id }) => id),
 );
 
 export const getReportByIdMap = createSelector([getReports], buildItemByIdMap);

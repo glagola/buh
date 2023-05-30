@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import _ from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 
 import { type TAccount, type TCurrency } from '@/entites';
 import { requiredCurrencies } from '@/settings';
@@ -21,6 +21,6 @@ export const getCurrencyByAccountIdMap = createSelector([getAccounts, getCurrenc
 
 export const getMostRecentReport = createSelector([getReportsChronologically], (reports) => reports.at(0));
 
-export const getCurrenciesToShow = createSelector([getCurrencies], (currencies) => {
-    return _.uniqBy([...requiredCurrencies, ...currencies], (currency) => currency.id);
-});
+export const getCurrenciesToShow = createSelector([getCurrencies], (currencies) =>
+    uniqBy([...requiredCurrencies, ...currencies], (currency) => currency.id),
+);

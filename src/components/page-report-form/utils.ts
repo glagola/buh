@@ -1,4 +1,4 @@
-import { uniqBy } from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 
 import { type TAccount, type TCurrency } from '@/entites';
 import { requiredCurrencies } from '@/settings';
