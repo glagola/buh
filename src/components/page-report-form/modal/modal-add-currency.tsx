@@ -5,7 +5,7 @@ import { TextFieldElement, useForm } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 
-import { type TCurrency, zCurrencyISOCode, TRawCurrency } from '@/entites';
+import { type TCurrency, zCurrencyISOCode, type TRawCurrency } from '@/entites';
 import { actions, getCurrencies } from '@/store/buh';
 
 const styleDialogTitle = {
