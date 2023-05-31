@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-import HistoryPage from '@/components/page-dashboard';
+import HistoryPage from '@/components/page-dashboard-report';
 import ErrorPage from '@/components/page-error';
 
 import ReportFormPage from './components/page-report-form';
