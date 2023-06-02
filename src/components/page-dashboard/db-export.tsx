@@ -1,5 +1,6 @@
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { Button } from '@mui/material';
+import { DateTime } from 'luxon';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -14,7 +15,7 @@ const ExportDB = () => {
         const blob = new Blob([fileData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = 'buh-history.json';
+        link.download = `${DateTime.now().toFormat('yyyy-LL-dd')} buh.json`;
         link.href = url;
         link.click();
 
