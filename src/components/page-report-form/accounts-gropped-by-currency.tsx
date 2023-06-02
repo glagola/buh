@@ -15,19 +15,38 @@ import { compareDateTime } from '@/utils/time';
 
 import * as S from './_styles';
 import ExpressionInput from './expression-input';
-import { type TFormAccountBalance, type TForm } from './validation';
+import { type TForm, type TFormAccountBalances } from './validation';
 
-const useArchivedAccounts = (currency: TCurrency, balances: TFormAccountBalance[]): TAccount[] => {
+const useAccs = (currency: TCurrency, balances: TFormAccountBalances): [TAccount[], TAccount[]] => {
     const accountsByCurrencyId = useSelector(getAccountsByCurrencyId);
+    const accountById = useSelector(getAccountByIdMap);
 
     return useMemo(() => {
         const accounts = accountsByCurrencyId.get(currency.id) ?? [];
-        const inUsage = balances.reduce((res, { accountId }) => res.add(accountId), new Set());
+        const current = [];
+        const archived = [];
 
-        return accounts
-            .filter(({ id }) => !inUsage.has(id))
-            .sort(compareDateTime((item) => DateTime.fromISO(item.createdAt)));
-    }, [accountsByCurrencyId, balances, currency.id]);
+        for (const account of accounts) {
+            if (account.id in balances) {
+                current.push(account);
+            } else {
+                archived.push(account);
+            }
+        }
+
+        current.sort((a, b) => {
+            const _a = accountById.get(a.id);
+            const _b = accountById.get(b.id);
+
+            if (!_a || !_b) return 0;
+
+            return _a.title.localeCompare(_b.title);
+        });
+
+        archived.sort(compareDateTime((item) => DateTime.fromISO(item.createdAt)));
+
+        return [current, archived];
+    }, [accountById, accountsByCurrencyId, balances, currency.id]);
 };
 
 type TProps = {
@@ -42,22 +61,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
 
     useWatch({ control: form.control, name: 'balances' });
 
-    const balances = form.getValues('balances') ?? [];
-    const indexByAccountId = balances.reduce(
-        (res, { accountId }, index) => res.set(accountId, index),
-        new Map<TAccount['id'], number>(),
-    );
-    const accountById = useSelector(getAccountByIdMap);
-    const sortedBalances = [...balances].sort((a, b) => {
-        const _a = accountById.get(a.accountId);
-        const _b = accountById.get(b.accountId);
-
-        if (!_a || !_b) return 0;
-
-        return _a.title.localeCompare(_b.title);
-    });
-
-    const archivedAccounts = useArchivedAccounts(props.currency, balances);
+    const [currentAccounts, archivedAccounts] = useAccs(props.currency, form.getValues('balances'));
 
     const currencyById = useSelector(getCurrencyByIdMap);
     const accountLastUsageById = useSelector(getAccountLastUsageById);
@@ -85,16 +89,10 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                 </Stack>
             </S.Row>
 
-            {!!sortedBalances.length &&
-                sortedBalances.map((balance) => {
-                    const account = accountById.get(balance.accountId);
-                    if (!account) return null;
-
+            {!!currentAccounts.length &&
+                currentAccounts.map((account) => {
                     const currency = currencyById.get(account.currencyId);
-                    if (!currency || currency.id !== props.currency.id) return null;
-
-                    const index = indexByAccountId.get(balance.accountId);
-                    if (undefined === index) return null;
+                    if (!currency) return null;
 
                     return (
                         <Fragment key={account.id}>
@@ -103,7 +101,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                             <S.ColumnInput archiving={isArchiving}>
                                 <ExpressionInput
                                     control={form.control}
-                                    name={`balances.${index}.formula`}
+                                    name={`balances.${account.id}`}
                                     formatAsMoney
                                 />
                             </S.ColumnInput>

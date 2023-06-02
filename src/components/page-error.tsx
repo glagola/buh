@@ -14,11 +14,6 @@ export default function ErrorPage() {
             <div id='error-page'>
                 <h1>Oops! {error.status}</h1>
                 <p>{error.statusText}</p>
-                {error.data?.message && (
-                    <p>
-                        <i>{error.data.message}</i>
-                    </p>
-                )}
             </div>
         );
     } else if (error instanceof Error) {

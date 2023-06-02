@@ -32,10 +32,12 @@ const ReportFormPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const handleSubmit = (data: TForm): void => {
-        const balances: TAccountBalance[] = data.balances.map(({ accountId, formula }) => ({
-            accountId,
-            balance: evaluateForSure(formula),
-        }));
+        const balances = Object.entries(data.balances).map(
+            ([accountId, formula]): TAccountBalance => ({
+                accountId,
+                balance: evaluateForSure(formula),
+            }),
+        );
 
         const exchangeRates: TExchangeRate[] = data.exchangeRates.map(({ formula, currencyId }) => ({
             currencyId,

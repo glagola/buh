@@ -3,17 +3,17 @@ import uniqBy from 'lodash/uniqBy';
 import { type TAccount, type TCurrency } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 
-import { type TFormAccountBalance, type TFormExchangeRate } from './validation';
+import { type TFormAccountBalances, type TFormExchangeRate } from './validation';
 
 export function buildFormExchangeRates(
     current: TFormExchangeRate[],
-    balances: TFormAccountBalance[],
-    currencyByAccountId: Map<TFormAccountBalance['accountId'], TCurrency>,
+    balances: TFormAccountBalances,
+    currencyByAccountId: Map<TAccount['id'], TCurrency>,
 ): TFormExchangeRate[] {
     const unqiueCurrencies = uniqBy(
         [
             ...requiredCurrencies,
-            ...balances.reduce<TCurrency[]>((res, { accountId }) => {
+            ...Object.keys(balances).reduce<TCurrency[]>((res, accountId) => {
                 const currency = currencyByAccountId.get(accountId);
                 if (currency) {
                     res.push(currency);
@@ -32,13 +32,3 @@ export function buildFormExchangeRates(
         formula: formulaByCurrencyId.get(currencyId) ?? '',
     }));
 }
-
-export const sortBalances = (accounts: TFormAccountBalance[], accountById: Map<TAccount['id'], TAccount>) =>
-    accounts.sort((a, b) => {
-        const _a = accountById.get(a.accountId);
-        const _b = accountById.get(b.accountId);
-
-        if (!_a || !_b) return 0;
-
-        return _a.title.localeCompare(_b.title);
-    });

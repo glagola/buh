@@ -5,11 +5,6 @@ import { safeEvaluate } from '@/utils/expression';
 
 const zFormula = z.string().refine((value) => undefined !== safeEvaluate(value), 'Must be valid math expression');
 
-const zFormAccountBalance = z.object({
-    accountId: zAccount.shape.id,
-    formula: zFormula,
-});
-
 const zFormExchangeRate = z.object({
     currencyId: zCurrency.shape.id,
     formula: zFormula.refine((value) => {
@@ -18,13 +13,17 @@ const zFormExchangeRate = z.object({
     }, 'Must be above 0'),
 });
 
+const zFormAccountBalances = z
+    .record(zAccount.shape.id, zFormula)
+    .refine((o) => Object.keys(o).length > 1, 'Must be at least 1 account');
+
 export const zForm = z.object({
     createdAt: z.coerce.string().datetime({ offset: true }),
-    balances: z.array(zFormAccountBalance).min(1),
+    balances: zFormAccountBalances,
     exchangeRates: z.array(zFormExchangeRate).min(1),
 });
 
-export type TFormAccountBalance = z.infer<typeof zFormAccountBalance>;
+export type TFormAccountBalances = z.infer<typeof zFormAccountBalances>;
 
 export type TFormExchangeRate = z.infer<typeof zFormExchangeRate>;
 
