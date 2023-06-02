@@ -7,7 +7,7 @@ import { zBuh, type TBuh } from '@/entites';
 import { actions } from '@/store/buh';
 
 const parse = (s: string): TBuh => {
-    const obj = JSON.parse(s) as unknown;
+    const obj = JSON.parse(s);
 
     return zBuh.parse(obj);
 };
