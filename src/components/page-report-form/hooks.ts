@@ -4,23 +4,24 @@ import { type UseFormReturn } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
 import { type TAccount, type TReport } from '@/entites';
-import { getAccountByIdMap } from '@/store/buh';
 import { formatNumber } from '@/utils/format';
 
 import { getCurrencyByAccountIdMap, getMostRecentReport } from './selector';
-import { buildFormExchangeRates, sortBalances } from './utils';
-import { type TForm, type TFormAccountBalance } from './validation';
+import { buildFormExchangeRates } from './utils';
+import { type TFormAccountBalances, type TForm } from './validation';
 
 export const useDefaultValues = (reportToEdit?: TReport): TForm => {
     const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
     const previousReport = useSelector(getMostRecentReport);
 
     return useMemo(() => {
-        const balances: TFormAccountBalance[] = (reportToEdit?.balances ?? previousReport?.balances ?? []).map(
-            (accountBalance) => ({
-                accountId: accountBalance.accountId,
-                formula: reportToEdit ? formatNumber(accountBalance.balance) : '',
-            }),
+        const balances = (reportToEdit?.balances ?? previousReport?.balances ?? []).reduce<TFormAccountBalances>(
+            (res, { accountId, balance }) => {
+                res[accountId] = reportToEdit ? formatNumber(balance) : '';
+
+                return res;
+            },
+            {},
         );
 
         const exchangeRates = buildFormExchangeRates(
@@ -44,11 +45,10 @@ export const useDefaultValues = (reportToEdit?: TReport): TForm => {
 };
 
 export const useAccountActions = (form: UseFormReturn<TForm>) => {
-    const accountById = useSelector(getAccountByIdMap);
     const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
 
     const updateForm = useCallback(
-        (balances: TFormAccountBalance[]) => {
+        (balances: TFormAccountBalances) => {
             form.setValue('balances', balances);
 
             form.setValue(
@@ -61,24 +61,21 @@ export const useAccountActions = (form: UseFormReturn<TForm>) => {
 
     const add = useCallback(
         (account: TAccount) => {
-            const accountBalance = {
-                accountId: account.id,
-                formula: '',
+            const balances = {
+                ...(form.getValues('balances') ?? {}),
+                [account.id]: '',
             };
 
-            const balances = form.getValues('balances') ?? [];
-            balances.push(accountBalance);
-
-            updateForm(sortBalances(balances, accountById));
+            updateForm(balances);
         },
-        [form, updateForm, accountById],
+        [form, updateForm],
     );
 
     const remove = useCallback(
         (accountToRemove: TAccount) => {
-            updateForm(
-                (form.getValues('balances') ?? []).filter((balance) => balance.accountId !== accountToRemove.id),
-            );
+            const { [accountToRemove.id]: _, ...balances } = form.getValues('balances') ?? {};
+
+            updateForm(balances);
         },
         [form, updateForm],
     );
