@@ -11,6 +11,7 @@ import {
     type TEntity,
     type TRawCurrency,
     type TAccount,
+    TCurrency,
 } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import { type TRootState } from '@/store';
@@ -116,12 +117,12 @@ export const getAccountByIdMap = createSelector([getAccounts], buildItemByIdMap)
 export const getCurrencyByIdMap = createSelector([getCurrencies], buildItemByIdMap);
 
 export const getExportDB = createSelector(
-    [getReports, getAccountByIdMap, getCurrencyByIdMap],
-    (reports, accountById, currencyById): TBuh => {
-        const accounts = [];
-        const currencies = [];
+    [getReportByIdMap, getAccountByIdMap, getCurrencyByIdMap],
+    (reportById, accountById, currencyById): TBuh => {
+        const accounts = new Set<TAccount>();
+        const currencies = new Set<TCurrency>();
 
-        for (const { balances } of reports) {
+        for (const { balances } of reportById.values()) {
             for (const { accountId } of balances) {
                 const account = accountById.get(accountId);
                 if (undefined === account) continue;
@@ -129,15 +130,15 @@ export const getExportDB = createSelector(
                 const currency = currencyById.get(account.currencyId);
                 if (undefined === currency) continue;
 
-                accounts.push(account);
-                currencies.push(currency);
+                accounts.add(account);
+                currencies.add(currency);
             }
         }
 
         return {
-            reports,
-            accounts,
-            currencies,
+            reports: [...reportById.values()],
+            accounts: [...accounts],
+            currencies: [...currencies],
         };
     },
 );
