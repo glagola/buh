@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
+import groupBy from 'lodash/groupBy';
 import { useMemo, type FC } from 'react';
 import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
@@ -53,14 +54,10 @@ const AddAccountModal: FC<TProps> = (props) => {
     const currencies = useSelector(getCurrencies);
     const accountUniqueIDs = useSelector(getAccountsTitleByCurrencyId);
 
-    const resolver = useMemo(() => {
-        return zodResolver(
-            zRawAccount
-                .omit({ currencyId: true })
-                .extend({
-                    currency: zCurrency,
-                })
-                .refine(
+    const resolver = useMemo(
+        () =>
+            zodResolver(
+                zForm.refine(
                     (rawFormAccount) => {
                         if (!rawFormAccount.currency?.id) return true;
 
@@ -70,8 +67,9 @@ const AddAccountModal: FC<TProps> = (props) => {
                     },
                     { message: 'Must be unique within the currency selected', path: ['title'] },
                 ),
-        );
-    }, [accountUniqueIDs]);
+            ),
+        [accountUniqueIDs],
+    );
 
     return (
         <Dialog
