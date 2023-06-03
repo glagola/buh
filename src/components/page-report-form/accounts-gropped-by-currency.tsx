@@ -78,7 +78,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                         variant='h5'
                         component='h2'
                     >
-                        {`Accounts in ${props.currency.isoCode}`}
+                        {`Accounts in ${props.currency.title}`}
                     </Typography>
                     <IconButton
                         aria-label='edit'
@@ -96,7 +96,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
 
                     return (
                         <Fragment key={account.id}>
-                            <ListItemText primary={`${account.title}, ${currency.isoCode}`} />
+                            <ListItemText primary={`${account.title}, ${currency.title}`} />
 
                             <S.ColumnInput archiving={isArchiving}>
                                 <ExpressionInput
@@ -141,7 +141,7 @@ const AccountsGroupedByCurrency = (props: TProps) => {
                                 }
                             >
                                 <ListItemText
-                                    primary={`${account.title}, ${currency.isoCode}${
+                                    primary={`${account.title}, ${currency.title}${
                                         lastUsedAt ? ` - Last used at ${lastUsedAt.toLocaleString()}` : ''
                                     }`}
                                 />

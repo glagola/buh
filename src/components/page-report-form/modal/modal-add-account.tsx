@@ -16,7 +16,7 @@ const styleDialogTitle = {
 };
 
 const autocompleteProps = {
-    getOptionLabel: (currency: TCurrency) => currency.isoCode,
+    getOptionLabel: ({ title }: TCurrency) => title,
     isOptionEqualToValue: (option: TCurrency, value: TCurrency) => option.id === value.id,
 };
 

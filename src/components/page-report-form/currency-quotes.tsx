@@ -28,10 +28,10 @@ const CurrenciesQuotes = () => {
 
                 return (
                     <ExpressionInput
-                        key={currency.isoCode}
+                        key={currency.id}
                         control={form.control}
                         name={`exchangeRates.${index}.formula`}
-                        label={`Price of 1 ${currency.isoCode} in Abstract currency`}
+                        label={`Price of 1 ${currency.title} in Abstract currency`}
                     />
                 );
             })}

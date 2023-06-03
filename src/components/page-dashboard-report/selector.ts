@@ -13,7 +13,7 @@ const buildConverter = (quotes: TExchangeRate[]) => {
         const toRate = rates.get(to.id);
 
         if (undefined === fromRate || undefined === toRate) {
-            throw new Error(`No way to convert from ${from.isoCode} to ${to.isoCode}`);
+            throw new Error(`No way to convert from ${from.title} to ${to.title}`);
         }
 
         return (sum * fromRate) / toRate;

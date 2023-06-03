@@ -16,13 +16,10 @@ const zDBEntity = zEntity.extend({
     createdAt: zDateTime,
 });
 
-export const zCurrencyISOCode = z
-    .string()
-    .min(3)
-    .refine((value) => value.toUpperCase() === value, 'Must be in uppercase');
+export const zCurrencyTitle = z.string().min(3);
 
 export const zCurrency = zEntity.extend({
-    isoCode: zCurrencyISOCode,
+    title: zCurrencyTitle,
 });
 const zRawCurrency = zCurrency.merge(zRawEntity);
 export type TCurrency = z.infer<typeof zCurrency>;

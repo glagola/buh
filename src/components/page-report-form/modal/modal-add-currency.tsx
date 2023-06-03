@@ -5,7 +5,7 @@ import { TextFieldElement, useForm } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 
-import { type TCurrency, zCurrencyISOCode, type TRawCurrency } from '@/entites';
+import { type TCurrency, zCurrencyTitle, type TRawCurrency } from '@/entites';
 import { actions, getCurrencies } from '@/store/buh';
 
 const styleDialogTitle = {
@@ -27,11 +27,11 @@ const useValidation = () => {
     const currencies = useSelector(getCurrencies);
 
     return useMemo(() => {
-        const usedIsoCodes = currencies.reduce((res, { isoCode }) => res.add(isoCode), new Set());
+        const used = new Set(currencies.map((c) => c.title.toUpperCase()));
 
         return zodResolver(
             z.object({
-                isoCode: zCurrencyISOCode.refine((value) => !usedIsoCodes.has(value), 'Already exists'),
+                title: zCurrencyTitle.refine((value) => !used.has(value.toUpperCase()), 'Already exists'),
             }),
         );
     }, [currencies]);
@@ -45,7 +45,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
         resolver,
         mode: 'all',
         defaultValues: {
-            isoCode: '',
+            title: '',
         },
     });
 
@@ -76,7 +76,7 @@ const AddCurrencyModal: FC<TProps> = (props) => {
                     <TextFieldElement
                         fullWidth
                         control={form.control}
-                        name='isoCode'
+                        name='title'
                         label='ISO currency code'
                     />
                 </DialogContent>

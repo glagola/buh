@@ -15,7 +15,7 @@ const percentFormatter = ({ value }: GridValueFormatterParams<number>) => `${for
 export const totalInTargetCurrencyHeader = {
     type: 'number',
     field: 'totalInTargetCurrency',
-    headerName: `Total, ${targetCurrency.isoCode}`,
+    headerName: `Total, ${targetCurrency.title}`,
     valueGetter,
     valueFormatter: moneyFormatter,
     flex: 1,
@@ -25,7 +25,7 @@ export const totalInTargetCurrencyHeader = {
 export const totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader = {
     type: 'number',
     field: 'totalOfAccountsInOtherCurrenciesInMajorCurrency',
-    headerName: `Non ${targetCurrency.isoCode} assets, ${reserveCurrency.isoCode}`,
+    headerName: `Non ${targetCurrency.title} assets, ${reserveCurrency.title}`,
     valueGetter,
     valueFormatter: moneyFormatter,
     flex: 1,
@@ -45,7 +45,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'deltaFromPreviuosReportInTargetCurrency',
-        headerName: `Difference, ${targetCurrency.isoCode}`,
+        headerName: `Difference, ${targetCurrency.title}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -55,7 +55,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'deltaPerMonthAverageInTargetCurrency',
-        headerName: `AVG per month diff, ${targetCurrency.isoCode}`,
+        headerName: `AVG per month diff, ${targetCurrency.title}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -75,7 +75,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'totalOfAccountsInTargetCurrency',
-        headerName: `Assets, ${targetCurrency.isoCode}`,
+        headerName: `Assets, ${targetCurrency.title}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -85,7 +85,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'moneyInMajorCurrencyPercent',
-        headerName: `Non ${targetCurrency.isoCode} assets, %`,
+        headerName: `Non ${targetCurrency.title} assets, %`,
         valueFormatter: percentFormatter,
         flex: 1,
         maxWidth: 131,
@@ -94,7 +94,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'majorToTargetCurrencyExchangeRate',
-        headerName: `${reserveCurrency.isoCode}/${targetCurrency.isoCode}`,
+        headerName: `${reserveCurrency.title}/${targetCurrency.title}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
@@ -104,7 +104,7 @@ export const columns: GridColDef<TRow>[] = [
     {
         type: 'number',
         field: 'totalInMajorCurrency',
-        headerName: `Total, ${reserveCurrency.isoCode}`,
+        headerName: `Total, ${reserveCurrency.title}`,
         valueGetter,
         valueFormatter: moneyFormatter,
         flex: 1,
