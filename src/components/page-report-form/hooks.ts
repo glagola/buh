@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
-import { useCallback, useMemo } from 'react';
-import { type UseFormReturn } from 'react-hook-form';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useWatch, type UseFormReturn } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
 import { type TAccount, type TReport } from '@/entites';
@@ -46,38 +46,35 @@ export const useDefaultValues = (reportToEdit?: TReport): TForm => {
 
 export const useAccountActions = (form: UseFormReturn<TForm>) => {
     const currencyByAccountId = useSelector(getCurrencyByAccountIdMap);
+    useWatch({ control: form.control, name: 'balances' });
 
-    const updateForm = useCallback(
-        (balances: TFormAccountBalances) => {
-            form.setValue('balances', balances);
-
-            form.setValue(
-                'exchangeRates',
-                buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances, currencyByAccountId),
-            );
-        },
-        [currencyByAccountId, form],
-    );
+    const balances = form.getValues('balances');
+    useEffect(() => {
+        form.setValue(
+            'exchangeRates',
+            buildFormExchangeRates(form.getValues('exchangeRates') ?? [], balances ?? {}, currencyByAccountId),
+        );
+    }, [currencyByAccountId, form, balances]);
 
     const add = useCallback(
         (account: TAccount) => {
-            const balances = {
+            const newBalances = {
                 ...(form.getValues('balances') ?? {}),
                 [account.id]: '',
             };
 
-            updateForm(balances);
+            form.setValue('balances', newBalances);
         },
-        [form, updateForm],
+        [form],
     );
 
     const remove = useCallback(
         (accountToRemove: TAccount) => {
-            const { [accountToRemove.id]: _, ...balances } = form.getValues('balances') ?? {};
+            const { [accountToRemove.id]: _, ...newBalances } = form.getValues('balances') ?? {};
 
-            updateForm(balances);
+            form.setValue('balances', newBalances);
         },
-        [form, updateForm],
+        [form],
     );
 
     return [add, remove];
