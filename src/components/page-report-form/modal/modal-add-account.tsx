@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from '@mui/material';
 import { createSelector } from '@reduxjs/toolkit';
-import groupBy from 'lodash/groupBy';
 import { useMemo, type FC } from 'react';
 import { AutocompleteElement, FormContainer, TextFieldElement } from 'react-hook-form-mui';
 import { useDispatch, useSelector } from 'react-redux';
