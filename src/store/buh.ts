@@ -11,7 +11,7 @@ import {
     type TEntity,
     type TRawCurrency,
     type TAccount,
-    TCurrency,
+    type TCurrency,
 } from '@/entites';
 import { requiredCurrencies } from '@/settings';
 import { type TRootState } from '@/store';
