@@ -4,6 +4,8 @@ export const buildConverter = (quotes: TExchangeRate[]) => {
     const rates = new Map<TCurrency['id'], TExchangeRate['quote']>(quotes.map((q) => [q.currencyId, q.quote]));
 
     return (sum: number, from: TCurrency, to: TCurrency): number => {
+        if (sum === 0) return 0;
+
         const fromRate = rates.get(from.id);
         const toRate = rates.get(to.id);
 
