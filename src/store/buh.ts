@@ -175,3 +175,19 @@ export const getAccountsByCurrencyId = createSelector([getAccounts], (accounts) 
 export const getReportsChronologically = createSelector([getReports], (reports) =>
     [...reports].sort(compareDateTime((report) => DateTime.fromISO(report.createdAt))),
 );
+
+export const getCurrencyByAccountIdMap = createSelector([getAccounts, getCurrencyByIdMap], (accounts, currencyById) => {
+    const res = new Map<TAccount['id'], TCurrency>();
+
+    for (const account of accounts) {
+        const currency = currencyById.get(account.currencyId);
+
+        if (currency) {
+            res.set(account.id, currency);
+        }
+    }
+
+    return res;
+});
+
+export const getMostRecentReport = createSelector([getReportsChronologically], (reports) => reports.at(0));

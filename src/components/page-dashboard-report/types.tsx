@@ -1,11 +1,6 @@
 import { type DateTime } from 'luxon';
 
-import { type TCurrency } from '@/entites';
-
-export type TMoney = {
-    currency: TCurrency;
-    amount: number;
-};
+import { type TMoney } from '@/types';
 
 export type TRow = {
     createdAt: DateTime;

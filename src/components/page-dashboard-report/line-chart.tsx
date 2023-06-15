@@ -3,10 +3,9 @@ import 'chartjs-adapter-luxon';
 import { type DateTime } from 'luxon';
 import { Line } from 'react-chartjs-2';
 
+import { type TMoney } from '@/types';
 import { isNonEmpty } from '@/utils/array';
 import { formatMoneyWithCents } from '@/utils/format';
-
-import { type TMoney } from './types';
 
 Chart.register(TimeScale, LinearScale, PointElement, LineElement, Title, Tooltip);
 

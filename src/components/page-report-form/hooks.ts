@@ -4,9 +4,9 @@ import { useWatch, type UseFormReturn } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 
 import { type TAccount, type TReport } from '@/entites';
+import { getCurrencyByAccountIdMap, getMostRecentReport } from '@/store/buh';
 import { formatNumber } from '@/utils/format';
 
-import { getCurrencyByAccountIdMap, getMostRecentReport } from './selector';
 import { buildFormExchangeRates } from './utils';
 import { type TFormAccountBalances, type TForm } from './validation';
 

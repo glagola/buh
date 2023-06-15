@@ -36,7 +36,7 @@ export default function DashboardReport() {
 
     return (
         <Stack gap={3}>
-            {3 < rows.length && (
+            {3 <= rows.length && (
                 <Stack
                     direction='row'
                     gap={3}
