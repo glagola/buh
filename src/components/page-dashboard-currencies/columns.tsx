@@ -1,11 +1,13 @@
 import { type GridValueFormatterParams, type GridColDef, type GridValueGetterParams } from '@mui/x-data-grid';
+import { DateTime } from 'luxon';
+import { Link } from 'react-router-dom';
 
+import { TReport, type TMoneyAmount } from '@/entites';
 import { reserveCurrency, targetCurrency } from '@/settings';
 import { type TMoney } from '@/types';
 import { formatMoneyWithCents } from '@/utils/format';
 
 import { type TRow } from './types';
-import { type TMoneyAmount } from '@/entites';
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
 const moneyFormatter = ({ value }: GridValueFormatterParams<TMoneyAmount | undefined>) =>
@@ -34,6 +36,9 @@ export const totalOfAccountsInOtherCurrenciesInMajorCurrencyHeader = {
 const defaults = {
     flex: 1,
 };
+
+const valueFormatter = ({ value }: GridValueFormatterParams<TReport>) =>
+    `${(value && DateTime.fromISO(value.createdAt).toISODate()) ?? ''}`;
 
 export const columns: GridColDef<TRow>[] = [
     {
@@ -71,18 +76,22 @@ export const columns: GridColDef<TRow>[] = [
 
     {
         ...defaults,
-        field: 'createdAt',
+        field: 'firstReport',
         headerName: 'First Usage',
-        valueFormatter: ({ value }: GridValueFormatterParams<TRow['createdAt']>) => {
-            return `${(value && value.toISODate()) ?? ''}`;
+        valueFormatter,
+        renderCell: (params) => {
+            const report = params.value as TReport;
+            return report && <Link to={`/report/${encodeURIComponent(report.id)}`}>{params.formattedValue}</Link>;
         },
     },
     {
         ...defaults,
-        field: 'lastReportAt',
+        field: 'lastReport',
         headerName: 'Last usage',
-        valueFormatter: ({ value }: GridValueFormatterParams<TRow['lastReportAt']>) => {
-            return `${(value && value.toISODate()) ?? ''}`;
+        valueFormatter,
+        renderCell: (params) => {
+            const report = params.value as TReport;
+            return report && <Link to={`/report/${encodeURIComponent(report.id)}`}>{params.formattedValue}</Link>;
         },
     },
 ];

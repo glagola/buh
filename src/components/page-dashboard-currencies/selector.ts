@@ -13,6 +13,7 @@ import {
     getReports,
 } from '@/store/buh';
 import { buildConverter } from '@/utils/currencyExchange';
+import { compareDateTime } from '@/utils/time';
 
 import { type TRow } from './types';
 
@@ -72,11 +73,9 @@ export const getChartDataSourceByCurrencyIdMap = createSelector(
     },
 );
 
-const buildGetCurrencyUsedAtByCurrencyIdMap = (
-    comparator: (current: DateTime, reportCreatedAt: DateTime) => DateTime,
-) =>
+const buildGetCurrencyUsedAtByCurrencyIdMap = (comparator: (current: TReport, other: TReport) => TReport) =>
     createSelector([getReports, getAccountByIdMap], (reports, accountByIdMap) => {
-        const res = new Map<TCurrency['id'], DateTime>();
+        const res = new Map<TCurrency['id'], TReport>();
 
         for (const report of reports) {
             for (const balance of report.balances) {
@@ -84,12 +83,11 @@ const buildGetCurrencyUsedAtByCurrencyIdMap = (
                 if (!account) continue;
 
                 const current = res.get(account.currencyId);
-                const reportCreatedAt = DateTime.fromISO(report.createdAt);
 
                 if (undefined === current) {
-                    res.set(account.currencyId, reportCreatedAt);
+                    res.set(account.currencyId, report);
                 } else {
-                    res.set(account.currencyId, comparator(current, reportCreatedAt));
+                    res.set(account.currencyId, comparator(current, report));
                 }
             }
         }
@@ -97,12 +95,13 @@ const buildGetCurrencyUsedAtByCurrencyIdMap = (
         return res;
     });
 
-const getFirstUsedAtByCurrencyIdMap = buildGetCurrencyUsedAtByCurrencyIdMap(
-    (current: DateTime, reportCreatedAt: DateTime): DateTime => (reportCreatedAt < current ? reportCreatedAt : current),
+const compareReports = compareDateTime((report: TReport) => DateTime.fromISO(report.createdAt));
+const getFirstReportByCurrencyIdMap = buildGetCurrencyUsedAtByCurrencyIdMap((a, b) =>
+    compareReports(a, b) === 1 ? a : b,
 );
 
-const getLastUsedAtByCurrencyIdMap = buildGetCurrencyUsedAtByCurrencyIdMap(
-    (current: DateTime, reportCreatedAt: DateTime): DateTime => (reportCreatedAt < current ? current : reportCreatedAt),
+const getLastReportByCurrencyIdMap = buildGetCurrencyUsedAtByCurrencyIdMap((a, b) =>
+    compareReports(b, a) === 1 ? a : b,
 );
 
 type TRowContext = {
@@ -115,15 +114,15 @@ export const prepareRowsContext = createSelector(
         getMostRecentReport,
         getMoneyAmountByCurrencyIdByReportIdMap,
         getCurrencies,
-        getFirstUsedAtByCurrencyIdMap,
-        getLastUsedAtByCurrencyIdMap,
+        getFirstReportByCurrencyIdMap,
+        getLastReportByCurrencyIdMap,
     ],
     (
         report,
         moneyAmountByCurrencyIdByReportIdMap,
         currencies,
-        firstUsedAtByCurrencyIdMap,
-        lastUsedAtByCurrencyIdMap,
+        firstReportByCurrencyIdMap,
+        lastReportByCurrencyIdMap,
     ): TRowContext | undefined => {
         if (!report) return;
 
@@ -143,8 +142,8 @@ export const prepareRowsContext = createSelector(
 
                 title: total.currency.title,
 
-                createdAt: firstUsedAtByCurrencyIdMap.get(currency.id),
-                lastReportAt: lastUsedAtByCurrencyIdMap.get(currency.id),
+                firstReport: firstReportByCurrencyIdMap.get(currency.id),
+                lastReport: lastReportByCurrencyIdMap.get(currency.id),
 
                 total,
 
