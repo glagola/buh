@@ -5,9 +5,10 @@ import { type TMoney } from '@/types';
 import { formatMoneyWithCents } from '@/utils/format';
 
 import { type TRow } from './types';
+import { type TMoneyAmount } from '@/entites';
 
 const valueGetter = (params: GridValueGetterParams<TRow, TMoney>) => params.value?.amount;
-const moneyFormatter = ({ value }: GridValueFormatterParams<TMoney['amount'] | undefined>) =>
+const moneyFormatter = ({ value }: GridValueFormatterParams<TMoneyAmount | undefined>) =>
     `${undefined === value ? '' : formatMoneyWithCents(value)}`;
 
 export const totalInTargetCurrencyHeader = {
