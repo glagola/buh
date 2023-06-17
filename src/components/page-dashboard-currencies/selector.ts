@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
+import { isZero } from 'mathjs';
 
 import { type TCurrency, type TMoneyAmount, type TReport } from '@/entites';
 import { reserveCurrency, targetCurrency } from '@/settings';
@@ -32,7 +33,9 @@ const getMoneyAmountByCurrencyIdByReportIdMap = createSelector(
                 const accCurrency = currencyByAccountIdMap.get(accountBalance.accountId);
                 if (!accCurrency) continue;
 
-                perReportRes.set(accCurrency.id, (perReportRes.get(accCurrency.id) ?? 0) + accountBalance.balance);
+                if (!isZero(accountBalance.balance)) {
+                    perReportRes.set(accCurrency.id, (perReportRes.get(accCurrency.id) ?? 0) + accountBalance.balance);
+                }
             }
 
             res.set(report.id, perReportRes);

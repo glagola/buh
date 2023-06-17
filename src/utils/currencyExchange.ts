@@ -1,10 +1,12 @@
+import { isZero } from 'mathjs';
+
 import { type TCurrency, type TExchangeRate } from '@/entites';
 
 export const buildConverter = (quotes: TExchangeRate[]) => {
     const rates = new Map<TCurrency['id'], TExchangeRate['quote']>(quotes.map((q) => [q.currencyId, q.quote]));
 
     return (sum: number, from: TCurrency, to: TCurrency): number => {
-        if (sum === 0) return 0;
+        if (isZero(sum)) return 0;
 
         const fromRate = rates.get(from.id);
         const toRate = rates.get(to.id);
