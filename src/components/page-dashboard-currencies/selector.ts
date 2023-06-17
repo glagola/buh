@@ -105,7 +105,12 @@ const getLastUsedAtByCurrencyIdMap = buildGetCurrencyUsedAtByCurrencyIdMap(
     (current: DateTime, reportCreatedAt: DateTime): DateTime => (reportCreatedAt < current ? current : reportCreatedAt),
 );
 
-export const prepareRows = createSelector(
+type TRowContext = {
+    report: TReport;
+    rows: TRow[];
+};
+
+export const prepareRowsContext = createSelector(
     [
         getMostRecentReport,
         getMoneyAmountByCurrencyIdByReportIdMap,
@@ -119,15 +124,15 @@ export const prepareRows = createSelector(
         currencies,
         firstUsedAtByCurrencyIdMap,
         lastUsedAtByCurrencyIdMap,
-    ): TRow[] => {
-        if (!report) return [];
+    ): TRowContext | undefined => {
+        if (!report) return;
 
         const moneyAmountByCurrencyIdMap = moneyAmountByCurrencyIdByReportIdMap.get(report.id);
-        if (!moneyAmountByCurrencyIdMap) return [];
+        if (!moneyAmountByCurrencyIdMap) return;
 
         const convert = buildConverter(report.exchangeRates);
 
-        return currencies.map((currency): TRow => {
+        const rows = currencies.map((currency): TRow => {
             const total = {
                 currency,
                 amount: moneyAmountByCurrencyIdMap.get(currency.id) ?? 0,
@@ -154,5 +159,10 @@ export const prepareRows = createSelector(
                 },
             };
         });
+
+        return {
+            report,
+            rows,
+        };
     },
 );

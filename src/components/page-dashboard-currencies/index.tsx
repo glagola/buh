@@ -1,6 +1,6 @@
-import { Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { DataGrid, type GridRowSelectionModel } from '@mui/x-data-grid';
-import { type DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useSelector } from 'react-redux';
@@ -11,14 +11,15 @@ import { isNonEmpty } from '@/utils/array';
 import { formatMoneyWithCents } from '@/utils/format';
 
 import { columns } from './columns';
-import { type TAmountData, getChartDataSourceByCurrencyIdMap, prepareRows } from './selector';
+import { type TAmountData, getChartDataSourceByCurrencyIdMap, prepareRowsContext } from './selector';
 
 const colors = ['#fd7f6f', '#7eb0d5', '#b2e061', '#bd7ebe', '#ffb55a', '#ffee65', '#beb9db', '#fdcce5', '#8bd3c7'];
 
 export default function DashboardCurrencies() {
     const chartDataPerCurrencyIdMap = useSelector(getChartDataSourceByCurrencyIdMap);
     const currencyByIdMap = useSelector(getCurrencyByIdMap);
-    const rows = useSelector(prepareRows);
+    const rowsContext = useSelector(prepareRowsContext);
+    const rows = rowsContext?.rows ?? [];
     const [selected, setSelected] = useState<TCurrency['id'][]>([]);
 
     const handleSelection = useCallback((rowSelectionModel: GridRowSelectionModel) => {
@@ -70,6 +71,14 @@ export default function DashboardCurrencies() {
 
     return (
         <Stack gap={3}>
+            {rowsContext?.report && (
+                <Typography
+                    component='h1'
+                    variant='h4'
+                >
+                    Currencies amounts according to {DateTime.fromISO(rowsContext.report.createdAt).toISODate()} report
+                </Typography>
+            )}
             <DataGrid
                 autoHeight
                 density='compact'
