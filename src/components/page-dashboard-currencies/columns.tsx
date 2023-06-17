@@ -2,7 +2,7 @@ import { type GridValueFormatterParams, type GridColDef, type GridValueGetterPar
 import { DateTime } from 'luxon';
 import { Link } from 'react-router-dom';
 
-import { TReport, type TMoneyAmount } from '@/entites';
+import { type TReport, type TMoneyAmount } from '@/entites';
 import { reserveCurrency, targetCurrency } from '@/settings';
 import { type TMoney } from '@/types';
 import { formatMoneyWithCents } from '@/utils/format';
