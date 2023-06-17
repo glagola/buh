@@ -73,30 +73,32 @@ export default function DashboardCurrencies() {
 
     return (
         <Stack gap={3}>
-            <Line
-                options={{
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => ` ${formatMoneyWithCents(context.parsed.y)}`,
-                                title: (items) => {
-                                    if (isNonEmpty(items)) {
-                                        const date = (items[0].raw as { x: DateTime }).x;
+            {datasets.length > 0 && (
+                <Line
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => ` ${formatMoneyWithCents(context.parsed.y)}`,
+                                    title: (items) => {
+                                        if (isNonEmpty(items)) {
+                                            const date = (items[0].raw as { x: DateTime }).x;
 
-                                        return date.toISODate() as string;
-                                    }
+                                            return date.toISODate() as string;
+                                        }
+                                    },
                                 },
                             },
                         },
-                    },
-                }}
-                data={{
-                    datasets,
-                }}
-            />
+                    }}
+                    data={{
+                        datasets,
+                    }}
+                />
+            )}
 
             <DataGrid
                 autoHeight
