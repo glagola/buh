@@ -15,7 +15,7 @@ const zFormExchangeRate = z.object({
 
 const zFormAccountBalances = z
     .record(zAccount.shape.id, zFormula)
-    .refine((o) => Object.keys(o).length > 1, 'Must be at least 1 account');
+    .refine((o) => Object.keys(o).length > 0, 'Must be at least 1 account');
 
 export const zForm = z.object({
     createdAt: z.coerce.string().datetime({ offset: true }),

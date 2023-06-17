@@ -1,28 +1,15 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { DateTime } from 'luxon';
 
-import { type TCurrency, type TExchangeRate } from '@/entites';
 import { reserveCurrency, targetCurrency } from '@/settings';
 import { getAccountByIdMap, getCurrencyByIdMap, getReportsChronologically } from '@/store/buh';
+import { buildConverter } from '@/utils/currencyExchange';
 
-const buildConverter = (quotes: TExchangeRate[]) => {
-    const rates = new Map<TCurrency['id'], TExchangeRate['quote']>(quotes.map((q) => [q.currencyId, q.quote]));
-
-    return (sum: number, from: TCurrency, to: TCurrency): number => {
-        const fromRate = rates.get(from.id);
-        const toRate = rates.get(to.id);
-
-        if (undefined === fromRate || undefined === toRate) {
-            throw new Error(`No way to convert from ${from.title} to ${to.title}`);
-        }
-
-        return (sum * fromRate) / toRate;
-    };
-};
+import { type TRow } from './types';
 
 export const prepareRows = createSelector(
     [getReportsChronologically, getAccountByIdMap, getCurrencyByIdMap],
-    (reports, accountById, currencyById) => {
+    (reports, accountById, currencyById): TRow[] => {
         const res = reports.map((report) => {
             const exchange = buildConverter(report.exchangeRates);
 

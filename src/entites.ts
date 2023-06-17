@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+const zMoneyAmount = z.number();
+export type TMoneyAmount = z.infer<typeof zMoneyAmount>;
+
 const zId = z.string().uuid();
 export const zDateTime = z.string().datetime({ offset: true });
 
@@ -27,7 +30,7 @@ export type TRawCurrency = z.infer<typeof zRawCurrency>;
 
 const zExchangeRate = z.object({
     currencyId: zId,
-    quote: z.number().refine((value) => value > 0, 'Must be above 0'),
+    quote: zMoneyAmount.refine((value) => value > 0, 'Must be above 0'),
 });
 
 export type TExchangeRate = z.infer<typeof zExchangeRate>;
@@ -45,7 +48,7 @@ export type TAccount = z.infer<typeof zAccount>;
 
 const zAccountBalance = z.object({
     accountId: zId,
-    balance: z.number(),
+    balance: zMoneyAmount,
 });
 
 export type TAccountBalance = z.infer<typeof zAccountBalance>;
