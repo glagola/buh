@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
 import { DataGrid, type GridRowSelectionModel } from '@mui/x-data-grid';
-import { Chart, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip } from 'chart.js';
+import { Chart, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import { type DateTime } from 'luxon';
 import { useCallback, useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
@@ -14,7 +14,7 @@ import { formatMoneyWithCents } from '@/utils/format';
 import { columns } from './columns';
 import { getChartDataSourceByCurrencyIdMap, prepareRows } from './selector';
 
-Chart.register(TimeScale, LinearScale, PointElement, LineElement, Title, Tooltip);
+Chart.register(TimeScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const colors = ['#fd7f6f', '#7eb0d5', '#b2e061', '#bd7ebe', '#ffb55a', '#ffee65', '#beb9db', '#fdcce5', '#8bd3c7'];
 
@@ -80,6 +80,9 @@ export default function DashboardCurrencies() {
                         maintainAspectRatio: true,
                         scales,
                         plugins: {
+                            legend: {
+                                position: 'top',
+                            },
                             tooltip: {
                                 callbacks: {
                                     label: (context) => ` ${formatMoneyWithCents(context.parsed.y)}`,
