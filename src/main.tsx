@@ -6,6 +6,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
+import { Chart, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -15,6 +16,8 @@ import DBGuard from '@/components/db-guard';
 import store from '@/store';
 
 import { router } from './router';
+
+Chart.register(TimeScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const darkTheme = createTheme({
     // palette: {

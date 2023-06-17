@@ -1,13 +1,10 @@
-import { Chart, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { type DateTime } from 'luxon';
 import { Line } from 'react-chartjs-2';
 
+import { type TMoneyAmount } from '@/entites';
 import { isNonEmpty } from '@/utils/array';
 import { formatMoneyWithCents } from '@/utils/format';
-import { type TMoneyAmount } from '@/entites';
-
-Chart.register(TimeScale, LinearScale, PointElement, LineElement, Title, Tooltip);
 
 type TProps = {
     title: string;
@@ -21,6 +18,7 @@ export default function OverviewCharts({ data, title }: TProps) {
     return (
         <Line
             options={{
+                animation: false,
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
@@ -39,6 +37,9 @@ export default function OverviewCharts({ data, title }: TProps) {
                 },
                 plugins: {
                     title: { display: true, text: title },
+                    legend: {
+                        display: false,
+                    },
                     tooltip: {
                         callbacks: {
                             label: (context) => ` ${formatMoneyWithCents(context.parsed.y)}`,
