@@ -16,9 +16,10 @@ import { buildConverter } from '@/utils/currencyExchange';
 
 import { type TRow } from './types';
 
-type TAmountData = {
+export type TAmountData = {
     x: DateTime;
     y: TMoneyAmount;
+    currency: TCurrency;
 };
 
 const getMoneyAmountByCurrencyIdByReportIdMap = createSelector(
@@ -60,6 +61,7 @@ export const getChartDataSourceByCurrencyIdMap = createSelector(
                 data.push({
                     x: DateTime.fromISO(report.createdAt),
                     y: moneyAmountByCurrencyIdMap.get(currency.id) ?? 0,
+                    currency,
                 });
 
                 res.set(currency.id, data);

@@ -11,7 +11,7 @@ import { isNonEmpty } from '@/utils/array';
 import { formatMoneyWithCents } from '@/utils/format';
 
 import { columns } from './columns';
-import { getChartDataSourceByCurrencyIdMap, prepareRows } from './selector';
+import { type TAmountData, getChartDataSourceByCurrencyIdMap, prepareRows } from './selector';
 
 const colors = ['#fd7f6f', '#7eb0d5', '#b2e061', '#bd7ebe', '#ffb55a', '#ffee65', '#beb9db', '#fdcce5', '#8bd3c7'];
 
@@ -70,6 +70,15 @@ export default function DashboardCurrencies() {
 
     return (
         <Stack gap={3}>
+            <DataGrid
+                autoHeight
+                density='compact'
+                rows={rows}
+                columns={columns}
+                checkboxSelection
+                disableRowSelectionOnClick
+                onRowSelectionModelChange={handleSelection}
+            />
             {datasets.length > 0 && (
                 <Line
                     options={{
@@ -77,13 +86,21 @@ export default function DashboardCurrencies() {
                         responsive: true,
                         maintainAspectRatio: true,
                         scales,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        },
                         plugins: {
                             legend: {
                                 position: 'top',
                             },
+
                             tooltip: {
                                 callbacks: {
-                                    label: (context) => ` ${formatMoneyWithCents(context.parsed.y)}`,
+                                    label: (context) => {
+                                        const raw = context.raw as TAmountData;
+                                        return ` ${raw.currency.title}: ${formatMoneyWithCents(context.parsed.y)}`;
+                                    },
                                     title: (items) => {
                                         if (isNonEmpty(items)) {
                                             const date = (items[0].raw as { x: DateTime }).x;
@@ -100,16 +117,6 @@ export default function DashboardCurrencies() {
                     }}
                 />
             )}
-
-            <DataGrid
-                autoHeight
-                density='compact'
-                rows={rows}
-                columns={columns}
-                checkboxSelection
-                disableRowSelectionOnClick
-                onRowSelectionModelChange={handleSelection}
-            />
         </Stack>
     );
 }
